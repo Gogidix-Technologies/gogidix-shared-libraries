@@ -1,0 +1,4 @@
+com/exalt/ecosystem/shared/validation/PhoneNumberValidator.class
+com/exalt/ecosystem/shared/validation/ValidEmail.class
+com/exalt/ecosystem/shared/validation/ValidPhoneNumber.class
+com/exalt/ecosystem/shared/validation/EmailValidator.class

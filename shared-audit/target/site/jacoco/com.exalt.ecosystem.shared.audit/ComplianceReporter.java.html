@@ -1,0 +1,756 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ComplianceReporter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Exalt Shared Audit Library</a> &gt; <a href="index.source.html" class="el_package">com.exalt.ecosystem.shared.audit</a> &gt; <span class="el_source">ComplianceReporter.java</span></div><h1>ComplianceReporter.java</h1><pre class="source lang-java linenums">package com.exalt.ecosystem.shared.audit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
+
+/**
+ * Service for generating compliance reports from audit events in the Exalt Social E-commerce Ecosystem.
+ * Provides specialized reporting capabilities for various regulatory requirements.
+ * 
+ * @author Exalt Development Team
+ * @since 1.0.0
+ */
+@Service
+@Transactional(readOnly = true)
+<span class="nc" id="L27">public class ComplianceReporter {</span>
+    
+<span class="nc" id="L29">    private static final Logger logger = LoggerFactory.getLogger(ComplianceReporter.class);</span>
+    
+    @Autowired
+    private AuditRepository auditRepository;
+    
+    /**
+     * Generates a GDPR compliance report for data access and processing activities.
+     * 
+     * @param startTime Start time for the report
+     * @param endTime End time for the report
+     * @param userId Optional user ID to filter by
+     * @return GDPR compliance report
+     */
+    public GdprComplianceReport generateGdprReport(LocalDateTime startTime, LocalDateTime endTime, String userId) {
+<span class="nc" id="L43">        logger.info(&quot;Generating GDPR compliance report from {} to {} for user: {}&quot;, </span>
+            startTime, endTime, userId);
+        
+<span class="nc" id="L46">        GdprComplianceReport report = new GdprComplianceReport();</span>
+<span class="nc" id="L47">        report.setReportPeriod(startTime, endTime);</span>
+<span class="nc" id="L48">        report.setGeneratedAt(LocalDateTime.now());</span>
+<span class="nc" id="L49">        report.setUserId(userId);</span>
+        
+        // Get all GDPR-related audit events
+<span class="nc" id="L52">        List&lt;AuditEvent&gt; gdprEvents = getComplianceEvents(&quot;GDPR&quot;, startTime, endTime, userId);</span>
+<span class="nc" id="L53">        report.setTotalEvents(gdprEvents.size());</span>
+        
+        // Categorize events by GDPR principles
+<span class="nc" id="L56">        report.setDataProcessingEvents(filterEventsByCategory(gdprEvents, &quot;DATA_PROCESSING&quot;));</span>
+<span class="nc" id="L57">        report.setDataAccessEvents(filterEventsByAction(gdprEvents, AuditEvent.AuditAction.READ));</span>
+<span class="nc" id="L58">        report.setDataExportEvents(filterEventsByAction(gdprEvents, AuditEvent.AuditAction.EXPORT));</span>
+<span class="nc" id="L59">        report.setDataDeletionEvents(filterEventsByAction(gdprEvents, AuditEvent.AuditAction.DELETE));</span>
+<span class="nc" id="L60">        report.setConsentEvents(filterEventsByCategory(gdprEvents, &quot;CONSENT&quot;));</span>
+        
+        // Calculate compliance metrics
+<span class="nc" id="L63">        report.setDataMinimizationCompliance(calculateDataMinimizationCompliance(gdprEvents));</span>
+<span class="nc" id="L64">        report.setPurposeLimitationCompliance(calculatePurposeLimitationCompliance(gdprEvents));</span>
+<span class="nc" id="L65">        report.setStorageLimitationCompliance(calculateStorageLimitationCompliance(gdprEvents));</span>
+        
+        // Generate recommendations
+<span class="nc" id="L68">        report.setRecommendations(generateGdprRecommendations(gdprEvents));</span>
+        
+<span class="nc" id="L70">        return report;</span>
+    }
+    
+    /**
+     * Generates a PCI DSS compliance report for payment data security.
+     * 
+     * @param startTime Start time for the report
+     * @param endTime End time for the report
+     * @return PCI DSS compliance report
+     */
+    public PciDssComplianceReport generatePciDssReport(LocalDateTime startTime, LocalDateTime endTime) {
+<span class="nc" id="L81">        logger.info(&quot;Generating PCI DSS compliance report from {} to {}&quot;, startTime, endTime);</span>
+        
+<span class="nc" id="L83">        PciDssComplianceReport report = new PciDssComplianceReport();</span>
+<span class="nc" id="L84">        report.setReportPeriod(startTime, endTime);</span>
+<span class="nc" id="L85">        report.setGeneratedAt(LocalDateTime.now());</span>
+        
+        // Get all PCI DSS-related audit events
+<span class="nc" id="L88">        List&lt;AuditEvent&gt; pciEvents = getComplianceEvents(&quot;PCI_DSS&quot;, startTime, endTime, null);</span>
+<span class="nc" id="L89">        report.setTotalEvents(pciEvents.size());</span>
+        
+        // Categorize events by PCI DSS requirements
+<span class="nc" id="L92">        report.setPaymentDataAccessEvents(filterEventsByResourceType(pciEvents, &quot;PAYMENT&quot;));</span>
+<span class="nc" id="L93">        report.setCardDataEvents(filterEventsByResourceType(pciEvents, &quot;CARD&quot;));</span>
+<span class="nc" id="L94">        report.setEncryptionEvents(filterEventsByCategory(pciEvents, &quot;ENCRYPTION&quot;));</span>
+<span class="nc" id="L95">        report.setAccessControlEvents(filterEventsByCategory(pciEvents, &quot;ACCESS_CONTROL&quot;));</span>
+<span class="nc" id="L96">        report.setNetworkSecurityEvents(filterEventsByCategory(pciEvents, &quot;NETWORK_SECURITY&quot;));</span>
+        
+        // Calculate compliance scores
+<span class="nc" id="L99">        report.setSecureNetworkScore(calculateSecureNetworkCompliance(pciEvents));</span>
+<span class="nc" id="L100">        report.setDataProtectionScore(calculateDataProtectionCompliance(pciEvents));</span>
+<span class="nc" id="L101">        report.setAccessControlScore(calculateAccessControlCompliance(pciEvents));</span>
+<span class="nc" id="L102">        report.setMonitoringScore(calculateMonitoringCompliance(pciEvents));</span>
+        
+        // Generate security recommendations
+<span class="nc" id="L105">        report.setSecurityRecommendations(generatePciSecurityRecommendations(pciEvents));</span>
+        
+<span class="nc" id="L107">        return report;</span>
+    }
+    
+    /**
+     * Generates a SOX compliance report for financial controls.
+     * 
+     * @param startTime Start time for the report
+     * @param endTime End time for the report
+     * @return SOX compliance report
+     */
+    public SoxComplianceReport generateSoxReport(LocalDateTime startTime, LocalDateTime endTime) {
+<span class="nc" id="L118">        logger.info(&quot;Generating SOX compliance report from {} to {}&quot;, startTime, endTime);</span>
+        
+<span class="nc" id="L120">        SoxComplianceReport report = new SoxComplianceReport();</span>
+<span class="nc" id="L121">        report.setReportPeriod(startTime, endTime);</span>
+<span class="nc" id="L122">        report.setGeneratedAt(LocalDateTime.now());</span>
+        
+        // Get all SOX-related audit events
+<span class="nc" id="L125">        List&lt;AuditEvent&gt; soxEvents = getComplianceEvents(&quot;SOX&quot;, startTime, endTime, null);</span>
+<span class="nc" id="L126">        report.setTotalEvents(soxEvents.size());</span>
+        
+        // Categorize events by SOX controls
+<span class="nc" id="L129">        report.setFinancialTransactionEvents(filterEventsByCategory(soxEvents, &quot;FINANCIAL&quot;));</span>
+<span class="nc" id="L130">        report.setConfigurationChangeEvents(filterEventsByAction(soxEvents, AuditEvent.AuditAction.CONFIGURE));</span>
+<span class="nc" id="L131">        report.setAccessGrantEvents(filterEventsByAction(soxEvents, AuditEvent.AuditAction.GRANT));</span>
+<span class="nc" id="L132">        report.setPrivilegedAccessEvents(filterEventsByCategory(soxEvents, &quot;PRIVILEGED_ACCESS&quot;));</span>
+        
+        // Calculate control effectiveness
+<span class="nc" id="L135">        report.setInternalControlScore(calculateInternalControlEffectiveness(soxEvents));</span>
+<span class="nc" id="L136">        report.setChangeManagementScore(calculateChangeManagementCompliance(soxEvents));</span>
+<span class="nc" id="L137">        report.setAccessManagementScore(calculateAccessManagementCompliance(soxEvents));</span>
+        
+        // Generate control recommendations
+<span class="nc" id="L140">        report.setControlRecommendations(generateSoxControlRecommendations(soxEvents));</span>
+        
+<span class="nc" id="L142">        return report;</span>
+    }
+    
+    /**
+     * Generates a comprehensive compliance dashboard showing all regulatory statuses.
+     * 
+     * @param startTime Start time for the dashboard
+     * @param endTime End time for the dashboard
+     * @return Compliance dashboard
+     */
+    public ComplianceDashboard generateComplianceDashboard(LocalDateTime startTime, LocalDateTime endTime) {
+<span class="nc" id="L153">        logger.info(&quot;Generating compliance dashboard from {} to {}&quot;, startTime, endTime);</span>
+        
+<span class="nc" id="L155">        ComplianceDashboard dashboard = new ComplianceDashboard();</span>
+<span class="nc" id="L156">        dashboard.setReportPeriod(startTime, endTime);</span>
+<span class="nc" id="L157">        dashboard.setGeneratedAt(LocalDateTime.now());</span>
+        
+        // Get summary statistics for each compliance type
+<span class="nc" id="L160">        dashboard.setGdprSummary(getComplianceSummary(&quot;GDPR&quot;, startTime, endTime));</span>
+<span class="nc" id="L161">        dashboard.setPciDssSummary(getComplianceSummary(&quot;PCI_DSS&quot;, startTime, endTime));</span>
+<span class="nc" id="L162">        dashboard.setSoxSummary(getComplianceSummary(&quot;SOX&quot;, startTime, endTime));</span>
+<span class="nc" id="L163">        dashboard.setHipaaSummary(getComplianceSummary(&quot;HIPAA&quot;, startTime, endTime));</span>
+        
+        // Calculate overall compliance score
+<span class="nc" id="L166">        dashboard.setOverallComplianceScore(calculateOverallComplianceScore(dashboard));</span>
+        
+        // Get trending data
+<span class="nc" id="L169">        dashboard.setComplianceTrends(getComplianceTrends(startTime, endTime));</span>
+        
+        // Get risk indicators
+<span class="nc" id="L172">        dashboard.setRiskIndicators(getComplianceRiskIndicators(startTime, endTime));</span>
+        
+<span class="nc" id="L174">        return dashboard;</span>
+    }
+    
+    /**
+     * Gets compliance events for a specific type and time range.
+     */
+    private List&lt;AuditEvent&gt; getComplianceEvents(String complianceType, LocalDateTime startTime, 
+                                               LocalDateTime endTime, String userId) {
+<span class="nc" id="L182">        Pageable pageable = PageRequest.of(0, Integer.MAX_VALUE, Sort.by(&quot;timestamp&quot;).descending());</span>
+        
+        // Use the repository method to find compliance events
+<span class="nc" id="L185">        Page&lt;AuditEvent&gt; page = auditRepository.findComplianceAuditEvents(</span>
+            &quot;$.&quot; + complianceType, startTime, endTime, pageable);
+        
+<span class="nc" id="L188">        List&lt;AuditEvent&gt; events = page.getContent();</span>
+        
+        // Additional filtering by user if specified
+<span class="nc bnc" id="L191" title="All 2 branches missed.">        if (userId != null) {</span>
+<span class="nc" id="L192">            events = events.stream()</span>
+<span class="nc" id="L193">                .filter(event -&gt; userId.equals(event.getUserId()))</span>
+<span class="nc" id="L194">                .collect(Collectors.toList());</span>
+        }
+        
+<span class="nc" id="L197">        return events;</span>
+    }
+    
+    /**
+     * Filters events by category.
+     */
+    private List&lt;AuditEvent&gt; filterEventsByCategory(List&lt;AuditEvent&gt; events, String category) {
+<span class="nc" id="L204">        return events.stream()</span>
+<span class="nc" id="L205">            .filter(event -&gt; category.equals(event.getCategory()))</span>
+<span class="nc" id="L206">            .collect(Collectors.toList());</span>
+    }
+    
+    /**
+     * Filters events by action.
+     */
+    private List&lt;AuditEvent&gt; filterEventsByAction(List&lt;AuditEvent&gt; events, AuditEvent.AuditAction action) {
+<span class="nc" id="L213">        return events.stream()</span>
+<span class="nc" id="L214">            .filter(event -&gt; action.equals(event.getAction()))</span>
+<span class="nc" id="L215">            .collect(Collectors.toList());</span>
+    }
+    
+    /**
+     * Filters events by resource type.
+     */
+    private List&lt;AuditEvent&gt; filterEventsByResourceType(List&lt;AuditEvent&gt; events, String resourceType) {
+<span class="nc" id="L222">        return events.stream()</span>
+<span class="nc" id="L223">            .filter(event -&gt; resourceType.equals(event.getResourceType()))</span>
+<span class="nc" id="L224">            .collect(Collectors.toList());</span>
+    }
+    
+    /**
+     * Calculates GDPR data minimization compliance score.
+     */
+    private double calculateDataMinimizationCompliance(List&lt;AuditEvent&gt; events) {
+        // Implementation would analyze data access patterns
+        // This is a simplified calculation
+<span class="nc" id="L233">        long totalDataAccess = events.stream()</span>
+<span class="nc bnc" id="L234" title="All 2 branches missed.">            .filter(e -&gt; e.getAction() == AuditEvent.AuditAction.READ)</span>
+<span class="nc" id="L235">            .count();</span>
+        
+<span class="nc" id="L237">        long justifiedAccess = events.stream()</span>
+<span class="nc bnc" id="L238" title="All 2 branches missed.">            .filter(e -&gt; e.getAction() == AuditEvent.AuditAction.READ)</span>
+<span class="nc bnc" id="L239" title="All 4 branches missed.">            .filter(e -&gt; e.getMetadata() != null &amp;&amp; e.getMetadata().containsKey(&quot;justification&quot;))</span>
+<span class="nc" id="L240">            .count();</span>
+        
+<span class="nc bnc" id="L242" title="All 2 branches missed.">        return totalDataAccess &gt; 0 ? (double) justifiedAccess / totalDataAccess * 100 : 100.0;</span>
+    }
+    
+    /**
+     * Calculates GDPR purpose limitation compliance score.
+     */
+    private double calculatePurposeLimitationCompliance(List&lt;AuditEvent&gt; events) {
+        // Simplified calculation based on metadata presence
+<span class="nc" id="L250">        long totalEvents = events.size();</span>
+<span class="nc" id="L251">        long eventsWithPurpose = events.stream()</span>
+<span class="nc bnc" id="L252" title="All 4 branches missed.">            .filter(e -&gt; e.getMetadata() != null &amp;&amp; e.getMetadata().containsKey(&quot;purpose&quot;))</span>
+<span class="nc" id="L253">            .count();</span>
+        
+<span class="nc bnc" id="L255" title="All 2 branches missed.">        return totalEvents &gt; 0 ? (double) eventsWithPurpose / totalEvents * 100 : 100.0;</span>
+    }
+    
+    /**
+     * Calculates GDPR storage limitation compliance score.
+     */
+    private double calculateStorageLimitationCompliance(List&lt;AuditEvent&gt; events) {
+        // Check retention policies are set
+<span class="nc" id="L263">        long eventsWithRetention = events.stream()</span>
+<span class="nc bnc" id="L264" title="All 4 branches missed.">            .filter(e -&gt; e.getRetentionDays() != null &amp;&amp; e.getRetentionDays() &gt; 0)</span>
+<span class="nc" id="L265">            .count();</span>
+        
+<span class="nc bnc" id="L267" title="All 2 branches missed.">        return events.size() &gt; 0 ? (double) eventsWithRetention / events.size() * 100 : 100.0;</span>
+    }
+    
+    /**
+     * Generates GDPR compliance recommendations.
+     */
+    private List&lt;String&gt; generateGdprRecommendations(List&lt;AuditEvent&gt; events) {
+<span class="nc" id="L274">        List&lt;String&gt; recommendations = new ArrayList&lt;&gt;();</span>
+        
+        // Check for missing justifications
+<span class="nc" id="L277">        long eventsWithoutJustification = events.stream()</span>
+<span class="nc bnc" id="L278" title="All 2 branches missed.">            .filter(e -&gt; e.getAction() == AuditEvent.AuditAction.READ)</span>
+<span class="nc bnc" id="L279" title="All 4 branches missed.">            .filter(e -&gt; e.getMetadata() == null || !e.getMetadata().containsKey(&quot;justification&quot;))</span>
+<span class="nc" id="L280">            .count();</span>
+        
+<span class="nc bnc" id="L282" title="All 2 branches missed.">        if (eventsWithoutJustification &gt; 0) {</span>
+<span class="nc" id="L283">            recommendations.add(&quot;Add justification metadata to &quot; + eventsWithoutJustification + &quot; data access events&quot;);</span>
+        }
+        
+        // Check for excessive data retention
+<span class="nc" id="L287">        long longRetentionEvents = events.stream()</span>
+<span class="nc bnc" id="L288" title="All 4 branches missed.">            .filter(e -&gt; e.getRetentionDays() != null &amp;&amp; e.getRetentionDays() &gt; 2555) // More than 7 years</span>
+<span class="nc" id="L289">            .count();</span>
+        
+<span class="nc bnc" id="L291" title="All 2 branches missed.">        if (longRetentionEvents &gt; 0) {</span>
+<span class="nc" id="L292">            recommendations.add(&quot;Review retention periods for &quot; + longRetentionEvents + &quot; events exceeding 7 years&quot;);</span>
+        }
+        
+<span class="nc" id="L295">        return recommendations;</span>
+    }
+    
+    /**
+     * Calculates PCI DSS secure network compliance score.
+     */
+    private double calculateSecureNetworkCompliance(List&lt;AuditEvent&gt; events) {
+        // Simplified calculation based on network security events
+<span class="nc" id="L303">        long networkEvents = filterEventsByCategory(events, &quot;NETWORK_SECURITY&quot;).size();</span>
+<span class="nc" id="L304">        long secureEvents = events.stream()</span>
+<span class="nc" id="L305">            .filter(e -&gt; &quot;NETWORK_SECURITY&quot;.equals(e.getCategory()))</span>
+<span class="nc" id="L306">            .filter(e -&gt; Boolean.TRUE.equals(e.getSuccess()))</span>
+<span class="nc" id="L307">            .count();</span>
+        
+<span class="nc bnc" id="L309" title="All 2 branches missed.">        return networkEvents &gt; 0 ? (double) secureEvents / networkEvents * 100 : 100.0;</span>
+    }
+    
+    /**
+     * Calculates PCI DSS data protection compliance score.
+     */
+    private double calculateDataProtectionCompliance(List&lt;AuditEvent&gt; events) {
+        // Check for encryption compliance
+<span class="nc" id="L317">        long dataEvents = events.stream()</span>
+<span class="nc bnc" id="L318" title="All 4 branches missed.">            .filter(e -&gt; &quot;PAYMENT&quot;.equals(e.getResourceType()) || &quot;CARD&quot;.equals(e.getResourceType()))</span>
+<span class="nc" id="L319">            .count();</span>
+        
+<span class="nc" id="L321">        long encryptedEvents = events.stream()</span>
+<span class="nc bnc" id="L322" title="All 4 branches missed.">            .filter(e -&gt; &quot;PAYMENT&quot;.equals(e.getResourceType()) || &quot;CARD&quot;.equals(e.getResourceType()))</span>
+<span class="nc bnc" id="L323" title="All 4 branches missed.">            .filter(e -&gt; e.getMetadata() != null &amp;&amp; Boolean.TRUE.equals(e.getMetadata().get(&quot;encrypted&quot;)))</span>
+<span class="nc" id="L324">            .count();</span>
+        
+<span class="nc bnc" id="L326" title="All 2 branches missed.">        return dataEvents &gt; 0 ? (double) encryptedEvents / dataEvents * 100 : 100.0;</span>
+    }
+    
+    /**
+     * Calculates PCI DSS access control compliance score.
+     */
+    private double calculateAccessControlCompliance(List&lt;AuditEvent&gt; events) {
+<span class="nc" id="L333">        long accessEvents = filterEventsByCategory(events, &quot;ACCESS_CONTROL&quot;).size();</span>
+<span class="nc" id="L334">        long authorizedEvents = events.stream()</span>
+<span class="nc" id="L335">            .filter(e -&gt; &quot;ACCESS_CONTROL&quot;.equals(e.getCategory()))</span>
+<span class="nc" id="L336">            .filter(e -&gt; Boolean.TRUE.equals(e.getSuccess()))</span>
+<span class="nc" id="L337">            .count();</span>
+        
+<span class="nc bnc" id="L339" title="All 2 branches missed.">        return accessEvents &gt; 0 ? (double) authorizedEvents / accessEvents * 100 : 100.0;</span>
+    }
+    
+    /**
+     * Calculates PCI DSS monitoring compliance score.
+     */
+    private double calculateMonitoringCompliance(List&lt;AuditEvent&gt; events) {
+        // Check if all events have proper monitoring metadata
+<span class="nc" id="L347">        long monitoredEvents = events.stream()</span>
+<span class="nc bnc" id="L348" title="All 4 branches missed.">            .filter(e -&gt; e.getMetadata() != null &amp;&amp; e.getMetadata().containsKey(&quot;monitored&quot;))</span>
+<span class="nc" id="L349">            .count();</span>
+        
+<span class="nc bnc" id="L351" title="All 2 branches missed.">        return events.size() &gt; 0 ? (double) monitoredEvents / events.size() * 100 : 100.0;</span>
+    }
+    
+    /**
+     * Generates PCI DSS security recommendations.
+     */
+    private List&lt;String&gt; generatePciSecurityRecommendations(List&lt;AuditEvent&gt; events) {
+<span class="nc" id="L358">        List&lt;String&gt; recommendations = new ArrayList&lt;&gt;();</span>
+        
+        // Check for unencrypted payment data access
+<span class="nc" id="L361">        long unencryptedPaymentAccess = events.stream()</span>
+<span class="nc bnc" id="L362" title="All 4 branches missed.">            .filter(e -&gt; &quot;PAYMENT&quot;.equals(e.getResourceType()) || &quot;CARD&quot;.equals(e.getResourceType()))</span>
+<span class="nc bnc" id="L363" title="All 4 branches missed.">            .filter(e -&gt; e.getMetadata() == null || !Boolean.TRUE.equals(e.getMetadata().get(&quot;encrypted&quot;)))</span>
+<span class="nc" id="L364">            .count();</span>
+        
+<span class="nc bnc" id="L366" title="All 2 branches missed.">        if (unencryptedPaymentAccess &gt; 0) {</span>
+<span class="nc" id="L367">            recommendations.add(&quot;Ensure encryption for &quot; + unencryptedPaymentAccess + &quot; payment data access events&quot;);</span>
+        }
+        
+        // Check for failed access control events
+<span class="nc" id="L371">        long failedAccessControl = filterEventsByCategory(events, &quot;ACCESS_CONTROL&quot;).stream()</span>
+<span class="nc" id="L372">            .filter(e -&gt; Boolean.FALSE.equals(e.getSuccess()))</span>
+<span class="nc" id="L373">            .count();</span>
+        
+<span class="nc bnc" id="L375" title="All 2 branches missed.">        if (failedAccessControl &gt; 0) {</span>
+<span class="nc" id="L376">            recommendations.add(&quot;Investigate &quot; + failedAccessControl + &quot; failed access control events&quot;);</span>
+        }
+        
+<span class="nc" id="L379">        return recommendations;</span>
+    }
+    
+    /**
+     * Calculates SOX internal control effectiveness.
+     */
+    private double calculateInternalControlEffectiveness(List&lt;AuditEvent&gt; events) {
+<span class="nc" id="L386">        long controlEvents = filterEventsByCategory(events, &quot;INTERNAL_CONTROL&quot;).size();</span>
+<span class="nc" id="L387">        long effectiveControls = events.stream()</span>
+<span class="nc" id="L388">            .filter(e -&gt; &quot;INTERNAL_CONTROL&quot;.equals(e.getCategory()))</span>
+<span class="nc" id="L389">            .filter(e -&gt; Boolean.TRUE.equals(e.getSuccess()))</span>
+<span class="nc" id="L390">            .count();</span>
+        
+<span class="nc bnc" id="L392" title="All 2 branches missed.">        return controlEvents &gt; 0 ? (double) effectiveControls / controlEvents * 100 : 100.0;</span>
+    }
+    
+    /**
+     * Calculates SOX change management compliance score.
+     */
+    private double calculateChangeManagementCompliance(List&lt;AuditEvent&gt; events) {
+<span class="nc" id="L399">        long changeEvents = filterEventsByAction(events, AuditEvent.AuditAction.CONFIGURE).size();</span>
+<span class="nc" id="L400">        long approvedChanges = events.stream()</span>
+<span class="nc bnc" id="L401" title="All 2 branches missed.">            .filter(e -&gt; e.getAction() == AuditEvent.AuditAction.CONFIGURE)</span>
+<span class="nc bnc" id="L402" title="All 4 branches missed.">            .filter(e -&gt; e.getMetadata() != null &amp;&amp; e.getMetadata().containsKey(&quot;approver&quot;))</span>
+<span class="nc" id="L403">            .count();</span>
+        
+<span class="nc bnc" id="L405" title="All 2 branches missed.">        return changeEvents &gt; 0 ? (double) approvedChanges / changeEvents * 100 : 100.0;</span>
+    }
+    
+    /**
+     * Calculates SOX access management compliance score.
+     */
+    private double calculateAccessManagementCompliance(List&lt;AuditEvent&gt; events) {
+<span class="nc" id="L412">        long accessGrantEvents = filterEventsByAction(events, AuditEvent.AuditAction.GRANT).size();</span>
+<span class="nc" id="L413">        long authorizedGrants = events.stream()</span>
+<span class="nc bnc" id="L414" title="All 2 branches missed.">            .filter(e -&gt; e.getAction() == AuditEvent.AuditAction.GRANT)</span>
+<span class="nc bnc" id="L415" title="All 4 branches missed.">            .filter(e -&gt; e.getMetadata() != null &amp;&amp; e.getMetadata().containsKey(&quot;authorization&quot;))</span>
+<span class="nc" id="L416">            .count();</span>
+        
+<span class="nc bnc" id="L418" title="All 2 branches missed.">        return accessGrantEvents &gt; 0 ? (double) authorizedGrants / accessGrantEvents * 100 : 100.0;</span>
+    }
+    
+    /**
+     * Generates SOX control recommendations.
+     */
+    private List&lt;String&gt; generateSoxControlRecommendations(List&lt;AuditEvent&gt; events) {
+<span class="nc" id="L425">        List&lt;String&gt; recommendations = new ArrayList&lt;&gt;();</span>
+        
+        // Check for unapproved configuration changes
+<span class="nc" id="L428">        long unapprovedChanges = events.stream()</span>
+<span class="nc bnc" id="L429" title="All 2 branches missed.">            .filter(e -&gt; e.getAction() == AuditEvent.AuditAction.CONFIGURE)</span>
+<span class="nc bnc" id="L430" title="All 4 branches missed.">            .filter(e -&gt; e.getMetadata() == null || !e.getMetadata().containsKey(&quot;approver&quot;))</span>
+<span class="nc" id="L431">            .count();</span>
+        
+<span class="nc bnc" id="L433" title="All 2 branches missed.">        if (unapprovedChanges &gt; 0) {</span>
+<span class="nc" id="L434">            recommendations.add(&quot;Ensure approval workflow for &quot; + unapprovedChanges + &quot; configuration changes&quot;);</span>
+        }
+        
+        // Check for unauthorized access grants
+<span class="nc" id="L438">        long unauthorizedGrants = events.stream()</span>
+<span class="nc bnc" id="L439" title="All 2 branches missed.">            .filter(e -&gt; e.getAction() == AuditEvent.AuditAction.GRANT)</span>
+<span class="nc bnc" id="L440" title="All 4 branches missed.">            .filter(e -&gt; e.getMetadata() == null || !e.getMetadata().containsKey(&quot;authorization&quot;))</span>
+<span class="nc" id="L441">            .count();</span>
+        
+<span class="nc bnc" id="L443" title="All 2 branches missed.">        if (unauthorizedGrants &gt; 0) {</span>
+<span class="nc" id="L444">            recommendations.add(&quot;Review authorization for &quot; + unauthorizedGrants + &quot; access grant events&quot;);</span>
+        }
+        
+<span class="nc" id="L447">        return recommendations;</span>
+    }
+    
+    /**
+     * Gets compliance summary for a specific type.
+     */
+    private ComplianceSummary getComplianceSummary(String complianceType, LocalDateTime startTime, LocalDateTime endTime) {
+<span class="nc" id="L454">        List&lt;AuditEvent&gt; events = getComplianceEvents(complianceType, startTime, endTime, null);</span>
+        
+<span class="nc" id="L456">        ComplianceSummary summary = new ComplianceSummary();</span>
+<span class="nc" id="L457">        summary.setComplianceType(complianceType);</span>
+<span class="nc" id="L458">        summary.setTotalEvents(events.size());</span>
+<span class="nc" id="L459">        summary.setCompliantEvents(events.stream().filter(e -&gt; Boolean.TRUE.equals(e.getSuccess())).count());</span>
+<span class="nc bnc" id="L460" title="All 2 branches missed.">        summary.setComplianceScore(summary.getTotalEvents() &gt; 0 ? </span>
+<span class="nc" id="L461">            (double) summary.getCompliantEvents() / summary.getTotalEvents() * 100 : 100.0);</span>
+        
+<span class="nc" id="L463">        return summary;</span>
+    }
+    
+    /**
+     * Calculates overall compliance score across all regulations.
+     */
+    private double calculateOverallComplianceScore(ComplianceDashboard dashboard) {
+<span class="nc" id="L470">        double totalScore = 0;</span>
+<span class="nc" id="L471">        int count = 0;</span>
+        
+<span class="nc bnc" id="L473" title="All 2 branches missed.">        if (dashboard.getGdprSummary() != null) {</span>
+<span class="nc" id="L474">            totalScore += dashboard.getGdprSummary().getComplianceScore();</span>
+<span class="nc" id="L475">            count++;</span>
+        }
+<span class="nc bnc" id="L477" title="All 2 branches missed.">        if (dashboard.getPciDssSummary() != null) {</span>
+<span class="nc" id="L478">            totalScore += dashboard.getPciDssSummary().getComplianceScore();</span>
+<span class="nc" id="L479">            count++;</span>
+        }
+<span class="nc bnc" id="L481" title="All 2 branches missed.">        if (dashboard.getSoxSummary() != null) {</span>
+<span class="nc" id="L482">            totalScore += dashboard.getSoxSummary().getComplianceScore();</span>
+<span class="nc" id="L483">            count++;</span>
+        }
+<span class="nc bnc" id="L485" title="All 2 branches missed.">        if (dashboard.getHipaaSummary() != null) {</span>
+<span class="nc" id="L486">            totalScore += dashboard.getHipaaSummary().getComplianceScore();</span>
+<span class="nc" id="L487">            count++;</span>
+        }
+        
+<span class="nc bnc" id="L490" title="All 2 branches missed.">        return count &gt; 0 ? totalScore / count : 100.0;</span>
+    }
+    
+    /**
+     * Gets compliance trends over time.
+     */
+    private Map&lt;String, Object&gt; getComplianceTrends(LocalDateTime startTime, LocalDateTime endTime) {
+<span class="nc" id="L497">        Map&lt;String, Object&gt; trends = new HashMap&lt;&gt;();</span>
+        
+        // Calculate daily compliance scores
+<span class="nc" id="L500">        LocalDateTime current = startTime;</span>
+<span class="nc" id="L501">        List&lt;Map&lt;String, Object&gt;&gt; dailyScores = new ArrayList&lt;&gt;();</span>
+        
+<span class="nc bnc" id="L503" title="All 2 branches missed.">        while (current.isBefore(endTime)) {</span>
+<span class="nc" id="L504">            LocalDateTime dayEnd = current.plusDays(1);</span>
+            
+<span class="nc" id="L506">            Map&lt;String, Object&gt; dayScore = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L507">            dayScore.put(&quot;date&quot;, current.format(DateTimeFormatter.ISO_LOCAL_DATE));</span>
+            
+            // Get events for this day
+<span class="nc" id="L510">            List&lt;AuditEvent&gt; dayEvents = auditRepository.findRecentAuditEvents(current, </span>
+<span class="nc" id="L511">                PageRequest.of(0, Integer.MAX_VALUE)).getContent()</span>
+<span class="nc" id="L512">                .stream()</span>
+<span class="nc" id="L513">                .filter(e -&gt; e.getTimestamp().isBefore(dayEnd))</span>
+<span class="nc" id="L514">                .collect(Collectors.toList());</span>
+            
+            // Calculate compliance score for the day
+<span class="nc" id="L517">            long compliantEvents = dayEvents.stream().filter(e -&gt; Boolean.TRUE.equals(e.getSuccess())).count();</span>
+<span class="nc bnc" id="L518" title="All 2 branches missed.">            double score = dayEvents.size() &gt; 0 ? (double) compliantEvents / dayEvents.size() * 100 : 100.0;</span>
+<span class="nc" id="L519">            dayScore.put(&quot;score&quot;, score);</span>
+            
+<span class="nc" id="L521">            dailyScores.add(dayScore);</span>
+<span class="nc" id="L522">            current = current.plusDays(1);</span>
+<span class="nc" id="L523">        }</span>
+        
+<span class="nc" id="L525">        trends.put(&quot;dailyScores&quot;, dailyScores);</span>
+<span class="nc" id="L526">        return trends;</span>
+    }
+    
+    /**
+     * Gets compliance risk indicators.
+     */
+    private List&lt;Map&lt;String, Object&gt;&gt; getComplianceRiskIndicators(LocalDateTime startTime, LocalDateTime endTime) {
+<span class="nc" id="L533">        List&lt;Map&lt;String, Object&gt;&gt; indicators = new ArrayList&lt;&gt;();</span>
+        
+        // High error rate indicator
+<span class="nc" id="L536">        long totalEvents = auditRepository.countByTimestampBetween(startTime, endTime);</span>
+<span class="nc" id="L537">        long failedEvents = auditRepository.countBySuccessFalseAndTimestampBetween(startTime, endTime);</span>
+        
+<span class="nc bnc" id="L539" title="All 2 branches missed.">        if (totalEvents &gt; 0) {</span>
+<span class="nc" id="L540">            double errorRate = (double) failedEvents / totalEvents * 100;</span>
+<span class="nc bnc" id="L541" title="All 2 branches missed.">            if (errorRate &gt; 5.0) { // More than 5% error rate</span>
+<span class="nc" id="L542">                Map&lt;String, Object&gt; indicator = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L543">                indicator.put(&quot;type&quot;, &quot;HIGH_ERROR_RATE&quot;);</span>
+<span class="nc" id="L544">                indicator.put(&quot;severity&quot;, &quot;HIGH&quot;);</span>
+<span class="nc" id="L545">                indicator.put(&quot;message&quot;, String.format(&quot;Error rate is %.2f%% (threshold: 5%%)&quot;, errorRate));</span>
+<span class="nc" id="L546">                indicator.put(&quot;value&quot;, errorRate);</span>
+<span class="nc" id="L547">                indicators.add(indicator);</span>
+            }
+        }
+        
+<span class="nc" id="L551">        return indicators;</span>
+    }
+    
+    // Inner classes for report structures
+    
+<span class="nc" id="L556">    public static class GdprComplianceReport {</span>
+        private LocalDateTime startTime;
+        private LocalDateTime endTime;
+        private LocalDateTime generatedAt;
+        private String userId;
+        private int totalEvents;
+        private List&lt;AuditEvent&gt; dataProcessingEvents;
+        private List&lt;AuditEvent&gt; dataAccessEvents;
+        private List&lt;AuditEvent&gt; dataExportEvents;
+        private List&lt;AuditEvent&gt; dataDeletionEvents;
+        private List&lt;AuditEvent&gt; consentEvents;
+        private double dataMinimizationCompliance;
+        private double purposeLimitationCompliance;
+        private double storageLimitationCompliance;
+        private List&lt;String&gt; recommendations;
+        
+        // Getters and setters
+        public void setReportPeriod(LocalDateTime startTime, LocalDateTime endTime) {
+<span class="nc" id="L574">            this.startTime = startTime;</span>
+<span class="nc" id="L575">            this.endTime = endTime;</span>
+<span class="nc" id="L576">        }</span>
+        
+        // ... (other getters and setters)
+<span class="nc" id="L579">        public LocalDateTime getStartTime() { return startTime; }</span>
+<span class="nc" id="L580">        public LocalDateTime getEndTime() { return endTime; }</span>
+<span class="nc" id="L581">        public LocalDateTime getGeneratedAt() { return generatedAt; }</span>
+<span class="nc" id="L582">        public void setGeneratedAt(LocalDateTime generatedAt) { this.generatedAt = generatedAt; }</span>
+<span class="nc" id="L583">        public String getUserId() { return userId; }</span>
+<span class="nc" id="L584">        public void setUserId(String userId) { this.userId = userId; }</span>
+<span class="nc" id="L585">        public int getTotalEvents() { return totalEvents; }</span>
+<span class="nc" id="L586">        public void setTotalEvents(int totalEvents) { this.totalEvents = totalEvents; }</span>
+<span class="nc" id="L587">        public List&lt;AuditEvent&gt; getDataProcessingEvents() { return dataProcessingEvents; }</span>
+<span class="nc" id="L588">        public void setDataProcessingEvents(List&lt;AuditEvent&gt; dataProcessingEvents) { this.dataProcessingEvents = dataProcessingEvents; }</span>
+<span class="nc" id="L589">        public List&lt;AuditEvent&gt; getDataAccessEvents() { return dataAccessEvents; }</span>
+<span class="nc" id="L590">        public void setDataAccessEvents(List&lt;AuditEvent&gt; dataAccessEvents) { this.dataAccessEvents = dataAccessEvents; }</span>
+<span class="nc" id="L591">        public List&lt;AuditEvent&gt; getDataExportEvents() { return dataExportEvents; }</span>
+<span class="nc" id="L592">        public void setDataExportEvents(List&lt;AuditEvent&gt; dataExportEvents) { this.dataExportEvents = dataExportEvents; }</span>
+<span class="nc" id="L593">        public List&lt;AuditEvent&gt; getDataDeletionEvents() { return dataDeletionEvents; }</span>
+<span class="nc" id="L594">        public void setDataDeletionEvents(List&lt;AuditEvent&gt; dataDeletionEvents) { this.dataDeletionEvents = dataDeletionEvents; }</span>
+<span class="nc" id="L595">        public List&lt;AuditEvent&gt; getConsentEvents() { return consentEvents; }</span>
+<span class="nc" id="L596">        public void setConsentEvents(List&lt;AuditEvent&gt; consentEvents) { this.consentEvents = consentEvents; }</span>
+<span class="nc" id="L597">        public double getDataMinimizationCompliance() { return dataMinimizationCompliance; }</span>
+<span class="nc" id="L598">        public void setDataMinimizationCompliance(double dataMinimizationCompliance) { this.dataMinimizationCompliance = dataMinimizationCompliance; }</span>
+<span class="nc" id="L599">        public double getPurposeLimitationCompliance() { return purposeLimitationCompliance; }</span>
+<span class="nc" id="L600">        public void setPurposeLimitationCompliance(double purposeLimitationCompliance) { this.purposeLimitationCompliance = purposeLimitationCompliance; }</span>
+<span class="nc" id="L601">        public double getStorageLimitationCompliance() { return storageLimitationCompliance; }</span>
+<span class="nc" id="L602">        public void setStorageLimitationCompliance(double storageLimitationCompliance) { this.storageLimitationCompliance = storageLimitationCompliance; }</span>
+<span class="nc" id="L603">        public List&lt;String&gt; getRecommendations() { return recommendations; }</span>
+<span class="nc" id="L604">        public void setRecommendations(List&lt;String&gt; recommendations) { this.recommendations = recommendations; }</span>
+    }
+    
+<span class="nc" id="L607">    public static class PciDssComplianceReport {</span>
+        private LocalDateTime startTime;
+        private LocalDateTime endTime;
+        private LocalDateTime generatedAt;
+        private int totalEvents;
+        private List&lt;AuditEvent&gt; paymentDataAccessEvents;
+        private List&lt;AuditEvent&gt; cardDataEvents;
+        private List&lt;AuditEvent&gt; encryptionEvents;
+        private List&lt;AuditEvent&gt; accessControlEvents;
+        private List&lt;AuditEvent&gt; networkSecurityEvents;
+        private double secureNetworkScore;
+        private double dataProtectionScore;
+        private double accessControlScore;
+        private double monitoringScore;
+        private List&lt;String&gt; securityRecommendations;
+        
+        public void setReportPeriod(LocalDateTime startTime, LocalDateTime endTime) {
+<span class="nc" id="L624">            this.startTime = startTime;</span>
+<span class="nc" id="L625">            this.endTime = endTime;</span>
+<span class="nc" id="L626">        }</span>
+        
+        // Getters and setters
+<span class="nc" id="L629">        public LocalDateTime getStartTime() { return startTime; }</span>
+<span class="nc" id="L630">        public LocalDateTime getEndTime() { return endTime; }</span>
+<span class="nc" id="L631">        public LocalDateTime getGeneratedAt() { return generatedAt; }</span>
+<span class="nc" id="L632">        public void setGeneratedAt(LocalDateTime generatedAt) { this.generatedAt = generatedAt; }</span>
+<span class="nc" id="L633">        public int getTotalEvents() { return totalEvents; }</span>
+<span class="nc" id="L634">        public void setTotalEvents(int totalEvents) { this.totalEvents = totalEvents; }</span>
+<span class="nc" id="L635">        public List&lt;AuditEvent&gt; getPaymentDataAccessEvents() { return paymentDataAccessEvents; }</span>
+<span class="nc" id="L636">        public void setPaymentDataAccessEvents(List&lt;AuditEvent&gt; paymentDataAccessEvents) { this.paymentDataAccessEvents = paymentDataAccessEvents; }</span>
+<span class="nc" id="L637">        public List&lt;AuditEvent&gt; getCardDataEvents() { return cardDataEvents; }</span>
+<span class="nc" id="L638">        public void setCardDataEvents(List&lt;AuditEvent&gt; cardDataEvents) { this.cardDataEvents = cardDataEvents; }</span>
+<span class="nc" id="L639">        public List&lt;AuditEvent&gt; getEncryptionEvents() { return encryptionEvents; }</span>
+<span class="nc" id="L640">        public void setEncryptionEvents(List&lt;AuditEvent&gt; encryptionEvents) { this.encryptionEvents = encryptionEvents; }</span>
+<span class="nc" id="L641">        public List&lt;AuditEvent&gt; getAccessControlEvents() { return accessControlEvents; }</span>
+<span class="nc" id="L642">        public void setAccessControlEvents(List&lt;AuditEvent&gt; accessControlEvents) { this.accessControlEvents = accessControlEvents; }</span>
+<span class="nc" id="L643">        public List&lt;AuditEvent&gt; getNetworkSecurityEvents() { return networkSecurityEvents; }</span>
+<span class="nc" id="L644">        public void setNetworkSecurityEvents(List&lt;AuditEvent&gt; networkSecurityEvents) { this.networkSecurityEvents = networkSecurityEvents; }</span>
+<span class="nc" id="L645">        public double getSecureNetworkScore() { return secureNetworkScore; }</span>
+<span class="nc" id="L646">        public void setSecureNetworkScore(double secureNetworkScore) { this.secureNetworkScore = secureNetworkScore; }</span>
+<span class="nc" id="L647">        public double getDataProtectionScore() { return dataProtectionScore; }</span>
+<span class="nc" id="L648">        public void setDataProtectionScore(double dataProtectionScore) { this.dataProtectionScore = dataProtectionScore; }</span>
+<span class="nc" id="L649">        public double getAccessControlScore() { return accessControlScore; }</span>
+<span class="nc" id="L650">        public void setAccessControlScore(double accessControlScore) { this.accessControlScore = accessControlScore; }</span>
+<span class="nc" id="L651">        public double getMonitoringScore() { return monitoringScore; }</span>
+<span class="nc" id="L652">        public void setMonitoringScore(double monitoringScore) { this.monitoringScore = monitoringScore; }</span>
+<span class="nc" id="L653">        public List&lt;String&gt; getSecurityRecommendations() { return securityRecommendations; }</span>
+<span class="nc" id="L654">        public void setSecurityRecommendations(List&lt;String&gt; securityRecommendations) { this.securityRecommendations = securityRecommendations; }</span>
+    }
+    
+<span class="nc" id="L657">    public static class SoxComplianceReport {</span>
+        private LocalDateTime startTime;
+        private LocalDateTime endTime;
+        private LocalDateTime generatedAt;
+        private int totalEvents;
+        private List&lt;AuditEvent&gt; financialTransactionEvents;
+        private List&lt;AuditEvent&gt; configurationChangeEvents;
+        private List&lt;AuditEvent&gt; accessGrantEvents;
+        private List&lt;AuditEvent&gt; privilegedAccessEvents;
+        private double internalControlScore;
+        private double changeManagementScore;
+        private double accessManagementScore;
+        private List&lt;String&gt; controlRecommendations;
+        
+        public void setReportPeriod(LocalDateTime startTime, LocalDateTime endTime) {
+<span class="nc" id="L672">            this.startTime = startTime;</span>
+<span class="nc" id="L673">            this.endTime = endTime;</span>
+<span class="nc" id="L674">        }</span>
+        
+        // Getters and setters
+<span class="nc" id="L677">        public LocalDateTime getStartTime() { return startTime; }</span>
+<span class="nc" id="L678">        public LocalDateTime getEndTime() { return endTime; }</span>
+<span class="nc" id="L679">        public LocalDateTime getGeneratedAt() { return generatedAt; }</span>
+<span class="nc" id="L680">        public void setGeneratedAt(LocalDateTime generatedAt) { this.generatedAt = generatedAt; }</span>
+<span class="nc" id="L681">        public int getTotalEvents() { return totalEvents; }</span>
+<span class="nc" id="L682">        public void setTotalEvents(int totalEvents) { this.totalEvents = totalEvents; }</span>
+<span class="nc" id="L683">        public List&lt;AuditEvent&gt; getFinancialTransactionEvents() { return financialTransactionEvents; }</span>
+<span class="nc" id="L684">        public void setFinancialTransactionEvents(List&lt;AuditEvent&gt; financialTransactionEvents) { this.financialTransactionEvents = financialTransactionEvents; }</span>
+<span class="nc" id="L685">        public List&lt;AuditEvent&gt; getConfigurationChangeEvents() { return configurationChangeEvents; }</span>
+<span class="nc" id="L686">        public void setConfigurationChangeEvents(List&lt;AuditEvent&gt; configurationChangeEvents) { this.configurationChangeEvents = configurationChangeEvents; }</span>
+<span class="nc" id="L687">        public List&lt;AuditEvent&gt; getAccessGrantEvents() { return accessGrantEvents; }</span>
+<span class="nc" id="L688">        public void setAccessGrantEvents(List&lt;AuditEvent&gt; accessGrantEvents) { this.accessGrantEvents = accessGrantEvents; }</span>
+<span class="nc" id="L689">        public List&lt;AuditEvent&gt; getPrivilegedAccessEvents() { return privilegedAccessEvents; }</span>
+<span class="nc" id="L690">        public void setPrivilegedAccessEvents(List&lt;AuditEvent&gt; privilegedAccessEvents) { this.privilegedAccessEvents = privilegedAccessEvents; }</span>
+<span class="nc" id="L691">        public double getInternalControlScore() { return internalControlScore; }</span>
+<span class="nc" id="L692">        public void setInternalControlScore(double internalControlScore) { this.internalControlScore = internalControlScore; }</span>
+<span class="nc" id="L693">        public double getChangeManagementScore() { return changeManagementScore; }</span>
+<span class="nc" id="L694">        public void setChangeManagementScore(double changeManagementScore) { this.changeManagementScore = changeManagementScore; }</span>
+<span class="nc" id="L695">        public double getAccessManagementScore() { return accessManagementScore; }</span>
+<span class="nc" id="L696">        public void setAccessManagementScore(double accessManagementScore) { this.accessManagementScore = accessManagementScore; }</span>
+<span class="nc" id="L697">        public List&lt;String&gt; getControlRecommendations() { return controlRecommendations; }</span>
+<span class="nc" id="L698">        public void setControlRecommendations(List&lt;String&gt; controlRecommendations) { this.controlRecommendations = controlRecommendations; }</span>
+    }
+    
+<span class="nc" id="L701">    public static class ComplianceDashboard {</span>
+        private LocalDateTime startTime;
+        private LocalDateTime endTime;
+        private LocalDateTime generatedAt;
+        private ComplianceSummary gdprSummary;
+        private ComplianceSummary pciDssSummary;
+        private ComplianceSummary soxSummary;
+        private ComplianceSummary hipaaSummary;
+        private double overallComplianceScore;
+        private Map&lt;String, Object&gt; complianceTrends;
+        private List&lt;Map&lt;String, Object&gt;&gt; riskIndicators;
+        
+        public void setReportPeriod(LocalDateTime startTime, LocalDateTime endTime) {
+<span class="nc" id="L714">            this.startTime = startTime;</span>
+<span class="nc" id="L715">            this.endTime = endTime;</span>
+<span class="nc" id="L716">        }</span>
+        
+        // Getters and setters
+<span class="nc" id="L719">        public LocalDateTime getStartTime() { return startTime; }</span>
+<span class="nc" id="L720">        public LocalDateTime getEndTime() { return endTime; }</span>
+<span class="nc" id="L721">        public LocalDateTime getGeneratedAt() { return generatedAt; }</span>
+<span class="nc" id="L722">        public void setGeneratedAt(LocalDateTime generatedAt) { this.generatedAt = generatedAt; }</span>
+<span class="nc" id="L723">        public ComplianceSummary getGdprSummary() { return gdprSummary; }</span>
+<span class="nc" id="L724">        public void setGdprSummary(ComplianceSummary gdprSummary) { this.gdprSummary = gdprSummary; }</span>
+<span class="nc" id="L725">        public ComplianceSummary getPciDssSummary() { return pciDssSummary; }</span>
+<span class="nc" id="L726">        public void setPciDssSummary(ComplianceSummary pciDssSummary) { this.pciDssSummary = pciDssSummary; }</span>
+<span class="nc" id="L727">        public ComplianceSummary getSoxSummary() { return soxSummary; }</span>
+<span class="nc" id="L728">        public void setSoxSummary(ComplianceSummary soxSummary) { this.soxSummary = soxSummary; }</span>
+<span class="nc" id="L729">        public ComplianceSummary getHipaaSummary() { return hipaaSummary; }</span>
+<span class="nc" id="L730">        public void setHipaaSummary(ComplianceSummary hipaaSummary) { this.hipaaSummary = hipaaSummary; }</span>
+<span class="nc" id="L731">        public double getOverallComplianceScore() { return overallComplianceScore; }</span>
+<span class="nc" id="L732">        public void setOverallComplianceScore(double overallComplianceScore) { this.overallComplianceScore = overallComplianceScore; }</span>
+<span class="nc" id="L733">        public Map&lt;String, Object&gt; getComplianceTrends() { return complianceTrends; }</span>
+<span class="nc" id="L734">        public void setComplianceTrends(Map&lt;String, Object&gt; complianceTrends) { this.complianceTrends = complianceTrends; }</span>
+<span class="nc" id="L735">        public List&lt;Map&lt;String, Object&gt;&gt; getRiskIndicators() { return riskIndicators; }</span>
+<span class="nc" id="L736">        public void setRiskIndicators(List&lt;Map&lt;String, Object&gt;&gt; riskIndicators) { this.riskIndicators = riskIndicators; }</span>
+    }
+    
+<span class="nc" id="L739">    public static class ComplianceSummary {</span>
+        private String complianceType;
+        private int totalEvents;
+        private long compliantEvents;
+        private double complianceScore;
+        
+        // Getters and setters
+<span class="nc" id="L746">        public String getComplianceType() { return complianceType; }</span>
+<span class="nc" id="L747">        public void setComplianceType(String complianceType) { this.complianceType = complianceType; }</span>
+<span class="nc" id="L748">        public int getTotalEvents() { return totalEvents; }</span>
+<span class="nc" id="L749">        public void setTotalEvents(int totalEvents) { this.totalEvents = totalEvents; }</span>
+<span class="nc" id="L750">        public long getCompliantEvents() { return compliantEvents; }</span>
+<span class="nc" id="L751">        public void setCompliantEvents(long compliantEvents) { this.compliantEvents = compliantEvents; }</span>
+<span class="nc" id="L752">        public double getComplianceScore() { return complianceScore; }</span>
+<span class="nc" id="L753">        public void setComplianceScore(double complianceScore) { this.complianceScore = complianceScore; }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

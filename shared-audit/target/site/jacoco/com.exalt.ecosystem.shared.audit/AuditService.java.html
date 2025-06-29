@@ -1,0 +1,746 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuditService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Exalt Shared Audit Library</a> &gt; <a href="index.source.html" class="el_package">com.exalt.ecosystem.shared.audit</a> &gt; <span class="el_source">AuditService.java</span></div><h1>AuditService.java</h1><pre class="source lang-java linenums">package com.exalt.ecosystem.shared.audit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+
+/**
+ * Implementation of the AuditLogger interface for the Exalt Social E-commerce Ecosystem.
+ * Provides comprehensive audit logging capabilities with async support and advanced querying.
+ * 
+ * @author Exalt Development Team
+ * @since 1.0.0
+ */
+@Service
+@Transactional
+<span class="nc" id="L32">public class AuditService implements AuditLogger {</span>
+    
+<span class="nc" id="L34">    private static final Logger logger = LoggerFactory.getLogger(AuditService.class);</span>
+    
+    @Autowired
+    private AuditRepository auditRepository;
+    
+    @Value(&quot;${spring.application.name:unknown-service}&quot;)
+    private String serviceName;
+    
+    @Value(&quot;${audit.async.enabled:true}&quot;)
+    private boolean asyncEnabled;
+    
+    @Value(&quot;${audit.retention.default-days:2555}&quot;)
+    private int defaultRetentionDays;
+    
+<span class="nc" id="L48">    private final ThreadLocal&lt;AuditContextImpl&gt; currentContext = new ThreadLocal&lt;&gt;();</span>
+    
+    @Override
+    public void audit(AuditEvent event) {
+        try {
+            // Ensure required fields are set
+<span class="nc" id="L54">            enrichAuditEvent(event);</span>
+            
+            // Validate the event
+<span class="nc" id="L57">            validateAuditEvent(event);</span>
+            
+            // Save to repository
+<span class="nc" id="L60">            auditRepository.save(event);</span>
+            
+<span class="nc" id="L62">            logger.debug(&quot;Audit event logged: {}&quot;, event.getSummary());</span>
+            
+<span class="nc" id="L64">        } catch (Exception e) {</span>
+<span class="nc" id="L65">            logger.error(&quot;Failed to log audit event: {}&quot;, event, e);</span>
+            // Don't rethrow - audit logging should not break business logic
+<span class="nc" id="L67">        }</span>
+<span class="nc" id="L68">    }</span>
+    
+    @Override
+    @Async
+    public CompletableFuture&lt;Void&gt; auditAsync(AuditEvent event) {
+<span class="nc" id="L73">        return CompletableFuture.runAsync(() -&gt; audit(event));</span>
+    }
+    
+    @Override
+    public void audit(AuditEvent.AuditAction action, String resourceType, String resourceId, String userId) {
+<span class="nc" id="L78">        AuditEvent event = AuditEvent.standard(action, serviceName)</span>
+<span class="nc" id="L79">            .resourceType(resourceType)</span>
+<span class="nc" id="L80">            .resourceId(resourceId)</span>
+<span class="nc" id="L81">            .userId(userId)</span>
+<span class="nc" id="L82">            .build();</span>
+        
+<span class="nc bnc" id="L84" title="All 2 branches missed.">        if (asyncEnabled) {</span>
+<span class="nc" id="L85">            auditAsync(event);</span>
+        } else {
+<span class="nc" id="L87">            audit(event);</span>
+        }
+<span class="nc" id="L89">    }</span>
+    
+    @Override
+    public CompletableFuture&lt;Void&gt; auditAsync(AuditEvent.AuditAction action, String resourceType, 
+                                            String resourceId, String userId) {
+<span class="nc" id="L94">        AuditEvent event = AuditEvent.standard(action, serviceName)</span>
+<span class="nc" id="L95">            .resourceType(resourceType)</span>
+<span class="nc" id="L96">            .resourceId(resourceId)</span>
+<span class="nc" id="L97">            .userId(userId)</span>
+<span class="nc" id="L98">            .build();</span>
+        
+<span class="nc" id="L100">        return auditAsync(event);</span>
+    }
+    
+    @Override
+    public void audit(AuditEvent.AuditAction action, String resourceType, String resourceId, 
+                     String userId, String description, Map&lt;String, Object&gt; metadata) {
+<span class="nc" id="L106">        AuditEvent event = AuditEvent.standard(action, serviceName)</span>
+<span class="nc" id="L107">            .resourceType(resourceType)</span>
+<span class="nc" id="L108">            .resourceId(resourceId)</span>
+<span class="nc" id="L109">            .userId(userId)</span>
+<span class="nc" id="L110">            .description(description)</span>
+<span class="nc" id="L111">            .metadata(metadata)</span>
+<span class="nc" id="L112">            .build();</span>
+        
+<span class="nc bnc" id="L114" title="All 2 branches missed.">        if (asyncEnabled) {</span>
+<span class="nc" id="L115">            auditAsync(event);</span>
+        } else {
+<span class="nc" id="L117">            audit(event);</span>
+        }
+<span class="nc" id="L119">    }</span>
+    
+    @Override
+    public void auditSecurity(AuditEvent.AuditAction action, String userId, String ipAddress, 
+                            String userAgent, boolean success, String description) {
+<span class="nc" id="L124">        AuditEvent event = AuditEvent.security(action, serviceName)</span>
+<span class="nc" id="L125">            .userId(userId)</span>
+<span class="nc" id="L126">            .ipAddress(ipAddress)</span>
+<span class="nc" id="L127">            .userAgent(userAgent)</span>
+<span class="nc" id="L128">            .success(success)</span>
+<span class="nc" id="L129">            .description(description)</span>
+<span class="nc bnc" id="L130" title="All 2 branches missed.">            .severity(success ? AuditEvent.AuditSeverity.INFO : AuditEvent.AuditSeverity.WARN)</span>
+<span class="nc" id="L131">            .build();</span>
+        
+        // Security events are always logged synchronously for immediate alerting
+<span class="nc" id="L134">        audit(event);</span>
+<span class="nc" id="L135">    }</span>
+    
+    @Override
+    public void auditCompliance(AuditEvent.AuditAction action, String resourceType, String resourceId,
+                              String userId, String complianceType, Map&lt;String, Object&gt; complianceData) {
+<span class="nc" id="L140">        AuditEvent event = AuditEvent.compliance(action, serviceName, complianceType)</span>
+<span class="nc" id="L141">            .resourceType(resourceType)</span>
+<span class="nc" id="L142">            .resourceId(resourceId)</span>
+<span class="nc" id="L143">            .userId(userId)</span>
+<span class="nc" id="L144">            .metadata(complianceData)</span>
+<span class="nc" id="L145">            .build();</span>
+        
+        // Set compliance flag
+<span class="nc" id="L148">        event.setComplianceFlag(complianceType, true);</span>
+        
+        // Compliance events are always logged synchronously
+<span class="nc" id="L151">        audit(event);</span>
+<span class="nc" id="L152">    }</span>
+    
+    @Override
+    public void auditDataAccess(String resourceType, String resourceId, String userId, 
+                              String accessType, String dataClassification) {
+<span class="nc" id="L157">        Map&lt;String, Object&gt; metadata = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L158">        metadata.put(&quot;accessType&quot;, accessType);</span>
+<span class="nc" id="L159">        metadata.put(&quot;dataClassification&quot;, dataClassification);</span>
+        
+<span class="nc" id="L161">        AuditEvent event = AuditEvent.standard(AuditEvent.AuditAction.READ, serviceName)</span>
+<span class="nc" id="L162">            .resourceType(resourceType)</span>
+<span class="nc" id="L163">            .resourceId(resourceId)</span>
+<span class="nc" id="L164">            .userId(userId)</span>
+<span class="nc" id="L165">            .category(&quot;DATA_ACCESS&quot;)</span>
+<span class="nc" id="L166">            .description(String.format(&quot;%s access to %s data&quot;, accessType, dataClassification))</span>
+<span class="nc" id="L167">            .metadata(metadata)</span>
+<span class="nc" id="L168">            .build();</span>
+        
+        // Add data classification tag
+<span class="nc" id="L171">        event.addTag(&quot;dataClassification&quot;, dataClassification);</span>
+<span class="nc" id="L172">        event.addTag(&quot;accessType&quot;, accessType);</span>
+        
+<span class="nc bnc" id="L174" title="All 2 branches missed.">        if (asyncEnabled) {</span>
+<span class="nc" id="L175">            auditAsync(event);</span>
+        } else {
+<span class="nc" id="L177">            audit(event);</span>
+        }
+<span class="nc" id="L179">    }</span>
+    
+    @Override
+    public void auditApiRequest(String httpMethod, String requestUri, String userId, 
+                              String ipAddress, String userAgent, int httpStatus, long durationMs) {
+<span class="nc" id="L184">        AuditEvent event = AuditEvent.standard(AuditEvent.AuditAction.ACCESS, serviceName)</span>
+<span class="nc" id="L185">            .userId(userId)</span>
+<span class="nc" id="L186">            .ipAddress(ipAddress)</span>
+<span class="nc" id="L187">            .userAgent(userAgent)</span>
+<span class="nc" id="L188">            .httpMethod(httpMethod)</span>
+<span class="nc" id="L189">            .requestUri(requestUri)</span>
+<span class="nc" id="L190">            .httpStatus(httpStatus)</span>
+<span class="nc bnc" id="L191" title="All 2 branches missed.">            .durationMs(durationMs)</span>
+<span class="nc" id="L192">            .success(httpStatus &lt; 400)</span>
+<span class="nc" id="L193">            .category(&quot;API_ACCESS&quot;)</span>
+<span class="nc" id="L194">            .description(String.format(&quot;%s %s&quot;, httpMethod, requestUri))</span>
+<span class="nc" id="L195">            .build();</span>
+        
+        // Add performance tags
+<span class="nc bnc" id="L198" title="All 2 branches missed.">        if (durationMs &gt; 5000) {</span>
+<span class="nc" id="L199">            event.addTag(&quot;performance&quot;, &quot;slow&quot;);</span>
+<span class="nc" id="L200">            event.setSeverity(AuditEvent.AuditSeverity.WARN);</span>
+<span class="nc bnc" id="L201" title="All 2 branches missed.">        } else if (durationMs &gt; 1000) {</span>
+<span class="nc" id="L202">            event.addTag(&quot;performance&quot;, &quot;moderate&quot;);</span>
+        } else {
+<span class="nc" id="L204">            event.addTag(&quot;performance&quot;, &quot;fast&quot;);</span>
+        }
+        
+<span class="nc bnc" id="L207" title="All 2 branches missed.">        if (asyncEnabled) {</span>
+<span class="nc" id="L208">            auditAsync(event);</span>
+        } else {
+<span class="nc" id="L210">            audit(event);</span>
+        }
+<span class="nc" id="L212">    }</span>
+    
+    @Override
+    public void auditBusinessProcess(String processName, String processStep, String resourceId,
+                                   String userId, Map&lt;String, Object&gt; processData, boolean success) {
+<span class="nc" id="L217">        Map&lt;String, Object&gt; metadata = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L218">        metadata.put(&quot;processName&quot;, processName);</span>
+<span class="nc" id="L219">        metadata.put(&quot;processStep&quot;, processStep);</span>
+<span class="nc bnc" id="L220" title="All 2 branches missed.">        if (processData != null) {</span>
+<span class="nc" id="L221">            metadata.putAll(processData);</span>
+        }
+        
+<span class="nc" id="L224">        AuditEvent event = AuditEvent.standard(AuditEvent.AuditAction.PROCESS, serviceName)</span>
+<span class="nc" id="L225">            .resourceType(&quot;BUSINESS_PROCESS&quot;)</span>
+<span class="nc" id="L226">            .resourceId(resourceId)</span>
+<span class="nc" id="L227">            .userId(userId)</span>
+<span class="nc" id="L228">            .success(success)</span>
+<span class="nc" id="L229">            .category(&quot;BUSINESS_PROCESS&quot;)</span>
+<span class="nc" id="L230">            .description(String.format(&quot;%s - %s&quot;, processName, processStep))</span>
+<span class="nc" id="L231">            .metadata(metadata)</span>
+<span class="nc" id="L232">            .build();</span>
+        
+<span class="nc" id="L234">        event.addTag(&quot;processName&quot;, processName);</span>
+<span class="nc" id="L235">        event.addTag(&quot;processStep&quot;, processStep);</span>
+        
+<span class="nc bnc" id="L237" title="All 2 branches missed.">        if (asyncEnabled) {</span>
+<span class="nc" id="L238">            auditAsync(event);</span>
+        } else {
+<span class="nc" id="L240">            audit(event);</span>
+        }
+<span class="nc" id="L242">    }</span>
+    
+    @Override
+    public void auditConfigChange(String configType, String configKey, Object oldValue, 
+                                Object newValue, String userId, String reason) {
+<span class="nc" id="L247">        Map&lt;String, Object&gt; oldValues = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L248">        oldValues.put(configKey, oldValue);</span>
+        
+<span class="nc" id="L250">        Map&lt;String, Object&gt; newValues = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L251">        newValues.put(configKey, newValue);</span>
+        
+<span class="nc" id="L253">        Map&lt;String, Object&gt; metadata = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L254">        metadata.put(&quot;configType&quot;, configType);</span>
+<span class="nc" id="L255">        metadata.put(&quot;reason&quot;, reason);</span>
+        
+<span class="nc" id="L257">        AuditEvent event = AuditEvent.standard(AuditEvent.AuditAction.CONFIGURE, serviceName)</span>
+<span class="nc" id="L258">            .resourceType(&quot;CONFIGURATION&quot;)</span>
+<span class="nc" id="L259">            .resourceId(configKey)</span>
+<span class="nc" id="L260">            .userId(userId)</span>
+<span class="nc" id="L261">            .category(&quot;CONFIGURATION&quot;)</span>
+<span class="nc" id="L262">            .description(String.format(&quot;Configuration change: %s.%s&quot;, configType, configKey))</span>
+<span class="nc" id="L263">            .oldValues(oldValues)</span>
+<span class="nc" id="L264">            .newValues(newValues)</span>
+<span class="nc" id="L265">            .metadata(metadata)</span>
+<span class="nc" id="L266">            .build();</span>
+        
+<span class="nc" id="L268">        event.addTag(&quot;configType&quot;, configType);</span>
+        
+        // Configuration changes are always logged synchronously
+<span class="nc" id="L271">        audit(event);</span>
+<span class="nc" id="L272">    }</span>
+    
+    @Override
+    public void auditError(AuditEvent.AuditAction action, String resourceType, String resourceId,
+                         String userId, Throwable exception, Map&lt;String, Object&gt; additionalContext) {
+<span class="nc" id="L277">        Map&lt;String, Object&gt; metadata = new HashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L278" title="All 2 branches missed.">        if (additionalContext != null) {</span>
+<span class="nc" id="L279">            metadata.putAll(additionalContext);</span>
+        }
+<span class="nc" id="L281">        metadata.put(&quot;exceptionMessage&quot;, exception.getMessage());</span>
+<span class="nc" id="L282">        metadata.put(&quot;stackTrace&quot;, getStackTrace(exception));</span>
+        
+<span class="nc" id="L284">        AuditEvent event = AuditEvent.standard(action, serviceName)</span>
+<span class="nc" id="L285">            .resourceType(resourceType)</span>
+<span class="nc" id="L286">            .resourceId(resourceId)</span>
+<span class="nc" id="L287">            .userId(userId)</span>
+<span class="nc" id="L288">            .success(false)</span>
+<span class="nc" id="L289">            .severity(AuditEvent.AuditSeverity.ERROR)</span>
+<span class="nc" id="L290">            .category(&quot;ERROR&quot;)</span>
+<span class="nc" id="L291">            .description(&quot;Operation failed with exception&quot;)</span>
+<span class="nc" id="L292">            .errorMessage(exception.getMessage())</span>
+<span class="nc" id="L293">            .exceptionType(exception.getClass().getSimpleName())</span>
+<span class="nc" id="L294">            .metadata(metadata)</span>
+<span class="nc" id="L295">            .build();</span>
+        
+        // Error events are always logged synchronously
+<span class="nc" id="L298">        audit(event);</span>
+<span class="nc" id="L299">    }</span>
+    
+    @Override
+    public AuditContext startAuditContext(String correlationId, String userId, String sessionId) {
+<span class="nc" id="L303">        AuditContextImpl context = new AuditContextImpl(correlationId, userId, sessionId);</span>
+<span class="nc" id="L304">        currentContext.set(context);</span>
+<span class="nc" id="L305">        return context;</span>
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public AuditSearchResult searchAuditEvents(AuditSearchCriteria criteria) {
+        // Build pageable
+<span class="nc" id="L312">        Sort sort = Sort.by(Sort.Direction.fromString(criteria.getSortDirection()), criteria.getSortBy());</span>
+<span class="nc" id="L313">        Pageable pageable = PageRequest.of(criteria.getPage(), criteria.getSize(), sort);</span>
+        
+        // Execute search using specifications or custom queries
+<span class="nc" id="L316">        Page&lt;AuditEvent&gt; page = executeSearch(criteria, pageable);</span>
+        
+<span class="nc" id="L318">        return new AuditSearchResultImpl(page);</span>
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public AuditStatistics getAuditStatistics(LocalDateTime startTime, LocalDateTime endTime, String groupBy) {
+<span class="nc" id="L324">        return new AuditStatisticsImpl(startTime, endTime, groupBy);</span>
+    }
+    
+    @Override
+    @Async
+    public CompletableFuture&lt;AuditExportResult&gt; exportAuditEvents(AuditSearchCriteria criteria, String format) {
+<span class="nc" id="L330">        return CompletableFuture.supplyAsync(() -&gt; {</span>
+            try {
+                // Create export
+<span class="nc" id="L333">                String exportId = UUID.randomUUID().toString();</span>
+                
+                // Execute search without pagination to get all results
+<span class="nc" id="L336">                AuditSearchCriteria exportCriteria = criteria;</span>
+<span class="nc" id="L337">                exportCriteria.setPage(0);</span>
+<span class="nc" id="L338">                exportCriteria.setSize(Integer.MAX_VALUE);</span>
+                
+<span class="nc" id="L340">                AuditSearchResult searchResult = searchAuditEvents(exportCriteria);</span>
+                
+                // Generate export file (implementation would depend on the format)
+<span class="nc" id="L343">                String fileName = generateExportFile(searchResult.getEvents(), format, exportId);</span>
+                
+<span class="nc" id="L345">                return new AuditExportResultImpl(exportId, format, fileName, searchResult.getEvents().size());</span>
+                
+<span class="nc" id="L347">            } catch (Exception e) {</span>
+<span class="nc" id="L348">                logger.error(&quot;Failed to export audit events&quot;, e);</span>
+<span class="nc" id="L349">                throw new RuntimeException(&quot;Export failed&quot;, e);</span>
+            }
+        });
+    }
+    
+    /**
+     * Enriches audit event with context information.
+     */
+    private void enrichAuditEvent(AuditEvent event) {
+        // Set service name if not already set
+<span class="nc bnc" id="L359" title="All 2 branches missed.">        if (event.getServiceName() == null) {</span>
+<span class="nc" id="L360">            event.setServiceName(serviceName);</span>
+        }
+        
+        // Set timestamp if not already set
+<span class="nc bnc" id="L364" title="All 2 branches missed.">        if (event.getTimestamp() == null) {</span>
+<span class="nc" id="L365">            event.setTimestamp(LocalDateTime.now());</span>
+        }
+        
+        // Set ID if not already set
+<span class="nc bnc" id="L369" title="All 2 branches missed.">        if (event.getId() == null) {</span>
+<span class="nc" id="L370">            event.setId(UUID.randomUUID());</span>
+        }
+        
+        // Set default retention if not set
+<span class="nc bnc" id="L374" title="All 2 branches missed.">        if (event.getRetentionDays() == null) {</span>
+<span class="nc" id="L375">            event.setRetentionDays(defaultRetentionDays);</span>
+        }
+        
+        // Enrich from current context if available
+<span class="nc" id="L379">        AuditContextImpl context = currentContext.get();</span>
+<span class="nc bnc" id="L380" title="All 2 branches missed.">        if (context != null) {</span>
+<span class="nc bnc" id="L381" title="All 2 branches missed.">            if (event.getCorrelationId() == null) {</span>
+<span class="nc" id="L382">                event.setCorrelationId(context.getCorrelationId());</span>
+            }
+<span class="nc bnc" id="L384" title="All 2 branches missed.">            if (event.getUserId() == null) {</span>
+<span class="nc" id="L385">                event.setUserId(context.getUserId());</span>
+            }
+<span class="nc bnc" id="L387" title="All 2 branches missed.">            if (event.getSessionId() == null) {</span>
+<span class="nc" id="L388">                event.setSessionId(context.getSessionId());</span>
+            }
+<span class="nc bnc" id="L390" title="All 2 branches missed.">            if (event.getTraceId() == null) {</span>
+<span class="nc" id="L391">                event.setTraceId(context.traceId);</span>
+            }
+            
+            // Add context data to metadata
+<span class="nc bnc" id="L395" title="All 2 branches missed.">            if (!context.contextData.isEmpty()) {</span>
+<span class="nc bnc" id="L396" title="All 2 branches missed.">                if (event.getMetadata() == null) {</span>
+<span class="nc" id="L397">                    event.setMetadata(new HashMap&lt;&gt;());</span>
+                }
+<span class="nc" id="L399">                event.getMetadata().putAll(context.contextData);</span>
+            }
+        }
+<span class="nc" id="L402">    }</span>
+    
+    /**
+     * Validates audit event before saving.
+     */
+    private void validateAuditEvent(AuditEvent event) {
+<span class="nc bnc" id="L408" title="All 2 branches missed.">        if (event.getAction() == null) {</span>
+<span class="nc" id="L409">            throw new IllegalArgumentException(&quot;Audit action cannot be null&quot;);</span>
+        }
+<span class="nc bnc" id="L411" title="All 4 branches missed.">        if (event.getServiceName() == null || event.getServiceName().trim().isEmpty()) {</span>
+<span class="nc" id="L412">            throw new IllegalArgumentException(&quot;Service name cannot be null or empty&quot;);</span>
+        }
+<span class="nc bnc" id="L414" title="All 2 branches missed.">        if (event.getTimestamp() == null) {</span>
+<span class="nc" id="L415">            throw new IllegalArgumentException(&quot;Timestamp cannot be null&quot;);</span>
+        }
+<span class="nc" id="L417">    }</span>
+    
+    /**
+     * Executes search based on criteria.
+     */
+    private Page&lt;AuditEvent&gt; executeSearch(AuditSearchCriteria criteria, Pageable pageable) {
+        // This is a simplified implementation
+        // In a real implementation, you would use JPA Specifications or custom queries
+        
+<span class="nc bnc" id="L426" title="All 6 branches missed.">        if (criteria.getUserId() != null &amp;&amp; criteria.getStartTime() != null &amp;&amp; criteria.getEndTime() != null) {</span>
+<span class="nc" id="L427">            return auditRepository.findByUserIdAndTimestampBetween(</span>
+<span class="nc" id="L428">                criteria.getUserId(), criteria.getStartTime(), criteria.getEndTime(), pageable);</span>
+<span class="nc bnc" id="L429" title="All 4 branches missed.">        } else if (criteria.getResourceType() != null &amp;&amp; criteria.getResourceId() != null) {</span>
+<span class="nc" id="L430">            return auditRepository.findByResourceTypeAndResourceId(</span>
+<span class="nc" id="L431">                criteria.getResourceType(), criteria.getResourceId(), pageable);</span>
+<span class="nc bnc" id="L432" title="All 4 branches missed.">        } else if (criteria.getStartTime() != null &amp;&amp; criteria.getEndTime() != null) {</span>
+            // Use a custom query or specification for time range
+<span class="nc" id="L434">            return auditRepository.findAll(pageable);</span>
+        } else {
+<span class="nc" id="L436">            return auditRepository.findAll(pageable);</span>
+        }
+    }
+    
+    /**
+     * Generates export file for audit events.
+     */
+    private String generateExportFile(List&lt;AuditEvent&gt; events, String format, String exportId) {
+        // This is a placeholder implementation
+        // Real implementation would generate actual files in the specified format
+<span class="nc" id="L446">        String fileName = String.format(&quot;audit_export_%s.%s&quot;, exportId, format.toLowerCase());</span>
+        
+        // In real implementation, you would:
+        // 1. Generate the file in the specified format (JSON, CSV, XML)
+        // 2. Store it in a secure location (S3, local storage, etc.)
+        // 3. Return the file name/path
+        
+<span class="nc" id="L453">        return fileName;</span>
+    }
+    
+    /**
+     * Gets stack trace as string.
+     */
+    private String getStackTrace(Throwable throwable) {
+<span class="nc" id="L460">        java.io.StringWriter sw = new java.io.StringWriter();</span>
+<span class="nc" id="L461">        java.io.PrintWriter pw = new java.io.PrintWriter(sw);</span>
+<span class="nc" id="L462">        throwable.printStackTrace(pw);</span>
+<span class="nc" id="L463">        return sw.toString();</span>
+    }
+    
+    /**
+     * Implementation of AuditContext.
+     */
+    private class AuditContextImpl implements AuditContext {
+        private final String correlationId;
+        private final String userId;
+        private final String sessionId;
+        private String traceId;
+<span class="nc" id="L474">        private final Map&lt;String, Object&gt; contextData = new HashMap&lt;&gt;();</span>
+        
+<span class="nc" id="L476">        public AuditContextImpl(String correlationId, String userId, String sessionId) {</span>
+<span class="nc" id="L477">            this.correlationId = correlationId;</span>
+<span class="nc" id="L478">            this.userId = userId;</span>
+<span class="nc" id="L479">            this.sessionId = sessionId;</span>
+<span class="nc" id="L480">        }</span>
+        
+        @Override
+        public String getCorrelationId() {
+<span class="nc" id="L484">            return correlationId;</span>
+        }
+        
+        @Override
+        public String getUserId() {
+<span class="nc" id="L489">            return userId;</span>
+        }
+        
+        @Override
+        public String getSessionId() {
+<span class="nc" id="L494">            return sessionId;</span>
+        }
+        
+        @Override
+        public void setTraceId(String traceId) {
+<span class="nc" id="L499">            this.traceId = traceId;</span>
+<span class="nc" id="L500">        }</span>
+        
+        @Override
+        public void addContextData(String key, Object value) {
+<span class="nc" id="L504">            contextData.put(key, value);</span>
+<span class="nc" id="L505">        }</span>
+        
+        @Override
+        public void audit(AuditEvent.AuditAction action, String resourceType, String resourceId) {
+<span class="nc" id="L509">            AuditService.this.audit(action, resourceType, resourceId, userId);</span>
+<span class="nc" id="L510">        }</span>
+        
+        @Override
+        public void audit(AuditEvent.AuditAction action, String resourceType, String resourceId, String description) {
+<span class="nc" id="L514">            AuditService.this.audit(action, resourceType, resourceId, userId, description, null);</span>
+<span class="nc" id="L515">        }</span>
+        
+        @Override
+        public CompletableFuture&lt;Void&gt; auditAsync(AuditEvent.AuditAction action, String resourceType, String resourceId) {
+<span class="nc" id="L519">            return AuditService.this.auditAsync(action, resourceType, resourceId, userId);</span>
+        }
+        
+        @Override
+        public void close() {
+<span class="nc" id="L524">            currentContext.remove();</span>
+<span class="nc" id="L525">        }</span>
+    }
+    
+    /**
+     * Implementation of AuditSearchResult.
+     */
+    private static class AuditSearchResultImpl implements AuditSearchResult {
+        private final Page&lt;AuditEvent&gt; page;
+        
+<span class="nc" id="L534">        public AuditSearchResultImpl(Page&lt;AuditEvent&gt; page) {</span>
+<span class="nc" id="L535">            this.page = page;</span>
+<span class="nc" id="L536">        }</span>
+        
+        @Override
+        public List&lt;AuditEvent&gt; getEvents() {
+<span class="nc" id="L540">            return page.getContent();</span>
+        }
+        
+        @Override
+        public long getTotalElements() {
+<span class="nc" id="L545">            return page.getTotalElements();</span>
+        }
+        
+        @Override
+        public int getTotalPages() {
+<span class="nc" id="L550">            return page.getTotalPages();</span>
+        }
+        
+        @Override
+        public int getCurrentPage() {
+<span class="nc" id="L555">            return page.getNumber();</span>
+        }
+        
+        @Override
+        public int getPageSize() {
+<span class="nc" id="L560">            return page.getSize();</span>
+        }
+        
+        @Override
+        public boolean hasNext() {
+<span class="nc" id="L565">            return page.hasNext();</span>
+        }
+        
+        @Override
+        public boolean hasPrevious() {
+<span class="nc" id="L570">            return page.hasPrevious();</span>
+        }
+    }
+    
+    /**
+     * Implementation of AuditStatistics.
+     */
+    private class AuditStatisticsImpl implements AuditStatistics {
+        private final LocalDateTime startTime;
+        private final LocalDateTime endTime;
+        private final String groupBy;
+        
+<span class="nc" id="L582">        public AuditStatisticsImpl(LocalDateTime startTime, LocalDateTime endTime, String groupBy) {</span>
+<span class="nc" id="L583">            this.startTime = startTime;</span>
+<span class="nc" id="L584">            this.endTime = endTime;</span>
+<span class="nc" id="L585">            this.groupBy = groupBy;</span>
+<span class="nc" id="L586">        }</span>
+        
+        @Override
+        public long getTotalEvents() {
+<span class="nc" id="L590">            return auditRepository.countByTimestampBetween(startTime, endTime);</span>
+        }
+        
+        @Override
+        public long getSuccessfulEvents() {
+<span class="nc" id="L595">            return getTotalEvents() - getFailedEvents();</span>
+        }
+        
+        @Override
+        public long getFailedEvents() {
+<span class="nc" id="L600">            return auditRepository.countBySuccessFalseAndTimestampBetween(startTime, endTime);</span>
+        }
+        
+        @Override
+        public Map&lt;String, Long&gt; getEventsByAction() {
+<span class="nc" id="L605">            return auditRepository.getAuditStatsByAction(startTime, endTime)</span>
+<span class="nc" id="L606">                .stream()</span>
+<span class="nc" id="L607">                .collect(Collectors.toMap(</span>
+<span class="nc" id="L608">                    arr -&gt; arr[0].toString(),</span>
+<span class="nc" id="L609">                    arr -&gt; (Long) arr[1]</span>
+                ));
+        }
+        
+        @Override
+        public Map&lt;String, Long&gt; getEventsBySeverity() {
+<span class="nc" id="L615">            return auditRepository.getAuditStatsBySeverity(startTime, endTime)</span>
+<span class="nc" id="L616">                .stream()</span>
+<span class="nc" id="L617">                .collect(Collectors.toMap(</span>
+<span class="nc" id="L618">                    arr -&gt; arr[0].toString(),</span>
+<span class="nc" id="L619">                    arr -&gt; (Long) arr[1]</span>
+                ));
+        }
+        
+        @Override
+        public Map&lt;String, Long&gt; getEventsByService() {
+<span class="nc" id="L625">            return auditRepository.getAuditStatsByService(startTime, endTime)</span>
+<span class="nc" id="L626">                .stream()</span>
+<span class="nc" id="L627">                .collect(Collectors.toMap(</span>
+<span class="nc" id="L628">                    arr -&gt; arr[0].toString(),</span>
+<span class="nc" id="L629">                    arr -&gt; (Long) arr[1]</span>
+                ));
+        }
+        
+        @Override
+        public Map&lt;String, Long&gt; getEventsByUser() {
+<span class="nc" id="L635">            return auditRepository.getAuditStatsByUser(startTime, endTime, 100)</span>
+<span class="nc" id="L636">                .stream()</span>
+<span class="nc" id="L637">                .collect(Collectors.toMap(</span>
+<span class="nc" id="L638">                    arr -&gt; arr[0].toString(),</span>
+<span class="nc" id="L639">                    arr -&gt; (Long) arr[1]</span>
+                ));
+        }
+        
+        @Override
+        public Map&lt;String, Long&gt; getEventsByHour() {
+<span class="nc" id="L645">            return auditRepository.getAuditStatsByHour(startTime, endTime)</span>
+<span class="nc" id="L646">                .stream()</span>
+<span class="nc" id="L647">                .collect(Collectors.toMap(</span>
+<span class="nc" id="L648">                    arr -&gt; &quot;Hour &quot; + arr[0].toString(),</span>
+<span class="nc" id="L649">                    arr -&gt; (Long) arr[1]</span>
+                ));
+        }
+        
+        @Override
+        public Map&lt;String, Long&gt; getEventsByDay() {
+<span class="nc" id="L655">            return auditRepository.getAuditStatsByDay(startTime, endTime)</span>
+<span class="nc" id="L656">                .stream()</span>
+<span class="nc" id="L657">                .collect(Collectors.toMap(</span>
+<span class="nc" id="L658">                    arr -&gt; arr[0].toString(),</span>
+<span class="nc" id="L659">                    arr -&gt; (Long) arr[1]</span>
+                ));
+        }
+        
+        @Override
+        public double getSuccessRate() {
+<span class="nc" id="L665">            Double rate = auditRepository.getSuccessRate(startTime, endTime);</span>
+<span class="nc bnc" id="L666" title="All 2 branches missed.">            return rate != null ? rate : 0.0;</span>
+        }
+        
+        @Override
+        public double getAverageResponseTime() {
+<span class="nc" id="L671">            Double avgTime = auditRepository.getAverageResponseTime(startTime, endTime);</span>
+<span class="nc bnc" id="L672" title="All 2 branches missed.">            return avgTime != null ? avgTime : 0.0;</span>
+        }
+    }
+    
+    /**
+     * Implementation of AuditExportResult.
+     */
+    private static class AuditExportResultImpl implements AuditExportResult {
+        private final String exportId;
+        private final String format;
+        private final String fileName;
+        private final int recordCount;
+        private final LocalDateTime createdAt;
+        
+<span class="nc" id="L686">        public AuditExportResultImpl(String exportId, String format, String fileName, int recordCount) {</span>
+<span class="nc" id="L687">            this.exportId = exportId;</span>
+<span class="nc" id="L688">            this.format = format;</span>
+<span class="nc" id="L689">            this.fileName = fileName;</span>
+<span class="nc" id="L690">            this.recordCount = recordCount;</span>
+<span class="nc" id="L691">            this.createdAt = LocalDateTime.now();</span>
+<span class="nc" id="L692">        }</span>
+        
+        @Override
+        public String getExportId() {
+<span class="nc" id="L696">            return exportId;</span>
+        }
+        
+        @Override
+        public String getFormat() {
+<span class="nc" id="L701">            return format;</span>
+        }
+        
+        @Override
+        public String getFileName() {
+<span class="nc" id="L706">            return fileName;</span>
+        }
+        
+        @Override
+        public long getFileSize() {
+            // Would be calculated based on actual file
+<span class="nc" id="L712">            return recordCount * 500; // Estimate 500 bytes per record</span>
+        }
+        
+        @Override
+        public String getDownloadUrl() {
+<span class="nc" id="L717">            return &quot;/api/audit/exports/&quot; + exportId + &quot;/download&quot;;</span>
+        }
+        
+        @Override
+        public LocalDateTime getCreatedAt() {
+<span class="nc" id="L722">            return createdAt;</span>
+        }
+        
+        @Override
+        public LocalDateTime getExpiresAt() {
+<span class="nc" id="L727">            return createdAt.plusDays(7); // Exports expire after 7 days</span>
+        }
+        
+        @Override
+        public int getRecordCount() {
+<span class="nc" id="L732">            return recordCount;</span>
+        }
+        
+        @Override
+        public boolean isReady() {
+<span class="nc" id="L737">            return true; // In real implementation, this would check file generation status</span>
+        }
+        
+        @Override
+        public String getStatus() {
+<span class="nc bnc" id="L742" title="All 2 branches missed.">            return isReady() ? &quot;COMPLETED&quot; : &quot;PROCESSING&quot;;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

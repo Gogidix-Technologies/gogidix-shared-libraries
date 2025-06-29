@@ -1,0 +1,7 @@
+com/exalt/ecosystem/shared/validation/PhoneNumberValidatorTest$RegionalFormatTests.class
+com/exalt/ecosystem/shared/validation/EmailValidatorTest.class
+com/exalt/ecosystem/shared/validation/EmailValidatorTest$InvalidEmailTests.class
+com/exalt/ecosystem/shared/validation/PhoneNumberValidatorTest$InvalidPhoneNumberTests.class
+com/exalt/ecosystem/shared/validation/EmailValidatorTest$ValidEmailTests.class
+com/exalt/ecosystem/shared/validation/PhoneNumberValidatorTest$ValidPhoneNumberTests.class
+com/exalt/ecosystem/shared/validation/PhoneNumberValidatorTest.class

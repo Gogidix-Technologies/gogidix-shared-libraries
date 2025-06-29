@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OrderStatus.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Exalt Shared Model Library</a> &gt; <a href="index.source.html" class="el_package">com.exalt.ecosystem.shared.model.order</a> &gt; <span class="el_source">OrderStatus.java</span></div><h1>OrderStatus.java</h1><pre class="source lang-java linenums">package com.exalt.ecosystem.shared.model.order;
+
+/**
+ * Enumeration of order statuses within the ecosystem.
+ * Defines the various states an order can be in throughout its lifecycle.
+ * 
+ * @author Exalt Development Team
+ * @since 1.0.0
+ */
+<span class="nc" id="L10">public enum OrderStatus {</span>
+    
+    /**
+     * Order has been created but payment is pending.
+     */
+<span class="nc" id="L15">    PENDING(&quot;Pending&quot;, &quot;Order created, payment pending&quot;, false),</span>
+    
+    /**
+     * Order is confirmed and being processed.
+     */
+<span class="nc" id="L20">    PROCESSING(&quot;Processing&quot;, &quot;Order confirmed and being processed&quot;, true),</span>
+    
+    /**
+     * Order has been shipped to customer.
+     */
+<span class="nc" id="L25">    SHIPPED(&quot;Shipped&quot;, &quot;Order has been shipped&quot;, true),</span>
+    
+    /**
+     * Order has been delivered to customer.
+     */
+<span class="nc" id="L30">    COMPLETED(&quot;Completed&quot;, &quot;Order delivered successfully&quot;, true),</span>
+    
+    /**
+     * Order has been cancelled by customer or admin.
+     */
+<span class="nc" id="L35">    CANCELLED(&quot;Cancelled&quot;, &quot;Order has been cancelled&quot;, false),</span>
+    
+    /**
+     * Order has been refunded.
+     */
+<span class="nc" id="L40">    REFUNDED(&quot;Refunded&quot;, &quot;Order has been refunded&quot;, false),</span>
+    
+    /**
+     * Order is on hold awaiting manual review.
+     */
+<span class="nc" id="L45">    ON_HOLD(&quot;On Hold&quot;, &quot;Order is on hold for review&quot;, false),</span>
+    
+    /**
+     * Order has failed processing.
+     */
+<span class="nc" id="L50">    FAILED(&quot;Failed&quot;, &quot;Order processing failed&quot;, false),</span>
+    
+    /**
+     * Order is partially fulfilled.
+     */
+<span class="nc" id="L55">    PARTIALLY_FULFILLED(&quot;Partially Fulfilled&quot;, &quot;Order is partially fulfilled&quot;, true),</span>
+    
+    /**
+     * Order is being returned by customer.
+     */
+<span class="nc" id="L60">    RETURNED(&quot;Returned&quot;, &quot;Order is being returned&quot;, false),</span>
+    
+    /**
+     * Order return has been processed.
+     */
+<span class="nc" id="L65">    RETURN_PROCESSED(&quot;Return Processed&quot;, &quot;Return has been processed&quot;, false);</span>
+    
+    private final String displayName;
+    private final String description;
+    private final boolean fulfillable;
+    
+    /**
+     * Constructor for OrderStatus enum.
+     * 
+     * @param displayName Human-readable status name
+     * @param description Status description
+     * @param fulfillable Whether the order can be fulfilled in this status
+     */
+<span class="nc" id="L78">    OrderStatus(String displayName, String description, boolean fulfillable) {</span>
+<span class="nc" id="L79">        this.displayName = displayName;</span>
+<span class="nc" id="L80">        this.description = description;</span>
+<span class="nc" id="L81">        this.fulfillable = fulfillable;</span>
+<span class="nc" id="L82">    }</span>
+    
+    /**
+     * Gets the human-readable display name for the status.
+     * 
+     * @return The display name
+     */
+    public String getDisplayName() {
+<span class="nc" id="L90">        return displayName;</span>
+    }
+    
+    /**
+     * Gets the description of the status.
+     * 
+     * @return The status description
+     */
+    public String getDescription() {
+<span class="nc" id="L99">        return description;</span>
+    }
+    
+    /**
+     * Checks if the order can be fulfilled in this status.
+     * 
+     * @return true if the order is fulfillable
+     */
+    public boolean isFulfillable() {
+<span class="nc" id="L108">        return fulfillable;</span>
+    }
+    
+    /**
+     * Checks if the status indicates a completed order.
+     * 
+     * @return true if the order is considered complete
+     */
+    public boolean isCompleted() {
+<span class="nc bnc" id="L117" title="All 6 branches missed.">        return this == COMPLETED || this == REFUNDED || this == RETURN_PROCESSED;</span>
+    }
+    
+    /**
+     * Checks if the status indicates an active order.
+     * 
+     * @return true if the order is active
+     */
+    public boolean isActive() {
+<span class="nc bnc" id="L126" title="All 8 branches missed.">        return this == PENDING || this == PROCESSING || this == SHIPPED || this == PARTIALLY_FULFILLED;</span>
+    }
+    
+    /**
+     * Checks if the status indicates a cancelled order.
+     * 
+     * @return true if the order is cancelled
+     */
+    public boolean isCancelled() {
+<span class="nc bnc" id="L135" title="All 4 branches missed.">        return this == CANCELLED || this == FAILED;</span>
+    }
+    
+    /**
+     * Gets valid transition statuses from the current status.
+     * 
+     * @return Array of statuses this status can transition to
+     */
+    public OrderStatus[] getValidTransitions() {
+<span class="nc bnc" id="L144" title="All 12 branches missed.">        switch (this) {</span>
+            case PENDING:
+<span class="nc" id="L146">                return new OrderStatus[]{PROCESSING, CANCELLED, FAILED, ON_HOLD};</span>
+            
+            case PROCESSING:
+<span class="nc" id="L149">                return new OrderStatus[]{SHIPPED, PARTIALLY_FULFILLED, CANCELLED, ON_HOLD, FAILED};</span>
+            
+            case SHIPPED:
+<span class="nc" id="L152">                return new OrderStatus[]{COMPLETED, RETURNED, CANCELLED};</span>
+            
+            case COMPLETED:
+<span class="nc" id="L155">                return new OrderStatus[]{RETURNED, REFUNDED};</span>
+            
+            case CANCELLED:
+<span class="nc" id="L158">                return new OrderStatus[]{REFUNDED}; // Only refund possible from cancelled</span>
+            
+            case REFUNDED:
+<span class="nc" id="L161">                return new OrderStatus[]{}; // Terminal state</span>
+            
+            case ON_HOLD:
+<span class="nc" id="L164">                return new OrderStatus[]{PROCESSING, CANCELLED, FAILED};</span>
+            
+            case FAILED:
+<span class="nc" id="L167">                return new OrderStatus[]{PENDING, CANCELLED}; // Can retry or cancel</span>
+            
+            case PARTIALLY_FULFILLED:
+<span class="nc" id="L170">                return new OrderStatus[]{COMPLETED, CANCELLED, RETURNED};</span>
+            
+            case RETURNED:
+<span class="nc" id="L173">                return new OrderStatus[]{RETURN_PROCESSED, REFUNDED};</span>
+            
+            case RETURN_PROCESSED:
+<span class="nc" id="L176">                return new OrderStatus[]{}; // Terminal state</span>
+            
+            default:
+<span class="nc" id="L179">                return new OrderStatus[]{};</span>
+        }
+    }
+    
+    /**
+     * Checks if transition to another status is valid.
+     * 
+     * @param targetStatus The target status to transition to
+     * @return true if transition is allowed
+     */
+    public boolean canTransitionTo(OrderStatus targetStatus) {
+<span class="nc" id="L190">        OrderStatus[] validTransitions = getValidTransitions();</span>
+<span class="nc bnc" id="L191" title="All 2 branches missed.">        for (OrderStatus status : validTransitions) {</span>
+<span class="nc bnc" id="L192" title="All 2 branches missed.">            if (status == targetStatus) {</span>
+<span class="nc" id="L193">                return true;</span>
+            }
+        }
+<span class="nc" id="L196">        return false;</span>
+    }
+    
+    /**
+     * Gets the priority level of the status (higher = more urgent attention needed).
+     * 
+     * @return Priority level (1-10)
+     */
+    public int getPriorityLevel() {
+<span class="nc bnc" id="L205" title="All 11 branches missed.">        switch (this) {</span>
+            case FAILED:
+<span class="nc" id="L207">                return 10;</span>
+            case ON_HOLD:
+<span class="nc" id="L209">                return 9;</span>
+            case RETURNED:
+<span class="nc" id="L211">                return 8;</span>
+            case CANCELLED:
+<span class="nc" id="L213">                return 7;</span>
+            case PENDING:
+<span class="nc" id="L215">                return 6;</span>
+            case PROCESSING:
+<span class="nc" id="L217">                return 5;</span>
+            case PARTIALLY_FULFILLED:
+<span class="nc" id="L219">                return 4;</span>
+            case SHIPPED:
+<span class="nc" id="L221">                return 3;</span>
+            case COMPLETED:
+<span class="nc" id="L223">                return 1;</span>
+            case REFUNDED:
+            case RETURN_PROCESSED:
+<span class="nc" id="L226">                return 0;</span>
+            default:
+<span class="nc" id="L228">                return 0;</span>
+        }
+    }
+    
+    /**
+     * Gets the color code associated with the status for UI display.
+     * 
+     * @return Color code (hex format)
+     */
+    public String getColorCode() {
+<span class="nc bnc" id="L238" title="All 12 branches missed.">        switch (this) {</span>
+            case PENDING:
+<span class="nc" id="L240">                return &quot;#ffc107&quot;; // Yellow</span>
+            case PROCESSING:
+<span class="nc" id="L242">                return &quot;#17a2b8&quot;; // Blue</span>
+            case SHIPPED:
+<span class="nc" id="L244">                return &quot;#007bff&quot;; // Primary Blue</span>
+            case COMPLETED:
+<span class="nc" id="L246">                return &quot;#28a745&quot;; // Green</span>
+            case CANCELLED:
+<span class="nc" id="L248">                return &quot;#dc3545&quot;; // Red</span>
+            case REFUNDED:
+<span class="nc" id="L250">                return &quot;#6c757d&quot;; // Gray</span>
+            case ON_HOLD:
+<span class="nc" id="L252">                return &quot;#fd7e14&quot;; // Orange</span>
+            case FAILED:
+<span class="nc" id="L254">                return &quot;#721c24&quot;; // Dark Red</span>
+            case PARTIALLY_FULFILLED:
+<span class="nc" id="L256">                return &quot;#20c997&quot;; // Teal</span>
+            case RETURNED:
+<span class="nc" id="L258">                return &quot;#e83e8c&quot;; // Pink</span>
+            case RETURN_PROCESSED:
+<span class="nc" id="L260">                return &quot;#6f42c1&quot;; // Purple</span>
+            default:
+<span class="nc" id="L262">                return &quot;#6c757d&quot;; // Default Gray</span>
+        }
+    }
+    
+    /**
+     * Gets the icon name associated with the status for UI display.
+     * 
+     * @return Icon name (FontAwesome compatible)
+     */
+    public String getIconName() {
+<span class="nc bnc" id="L272" title="All 12 branches missed.">        switch (this) {</span>
+            case PENDING:
+<span class="nc" id="L274">                return &quot;clock&quot;;</span>
+            case PROCESSING:
+<span class="nc" id="L276">                return &quot;cog&quot;;</span>
+            case SHIPPED:
+<span class="nc" id="L278">                return &quot;truck&quot;;</span>
+            case COMPLETED:
+<span class="nc" id="L280">                return &quot;check-circle&quot;;</span>
+            case CANCELLED:
+<span class="nc" id="L282">                return &quot;times-circle&quot;;</span>
+            case REFUNDED:
+<span class="nc" id="L284">                return &quot;money-bill-wave&quot;;</span>
+            case ON_HOLD:
+<span class="nc" id="L286">                return &quot;pause-circle&quot;;</span>
+            case FAILED:
+<span class="nc" id="L288">                return &quot;exclamation-triangle&quot;;</span>
+            case PARTIALLY_FULFILLED:
+<span class="nc" id="L290">                return &quot;check&quot;;</span>
+            case RETURNED:
+<span class="nc" id="L292">                return &quot;undo&quot;;</span>
+            case RETURN_PROCESSED:
+<span class="nc" id="L294">                return &quot;check-double&quot;;</span>
+            default:
+<span class="nc" id="L296">                return &quot;question-circle&quot;;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

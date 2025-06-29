@@ -1,0 +1,6 @@
+com/exalt/ecosystem/shared/exceptions/AuthenticationException.class
+com/exalt/ecosystem/shared/exceptions/AuthorizationException.class
+com/exalt/ecosystem/shared/exceptions/ResourceNotFoundException.class
+com/exalt/ecosystem/shared/exceptions/BusinessException.class
+com/exalt/ecosystem/shared/exceptions/ValidationException.class
+com/exalt/ecosystem/shared/exceptions/BaseException.class

@@ -1,0 +1,50 @@
+# Test configuration for shared-model database integration tests
+spring:
+  # Database configuration for testing
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  
+  # JPA/Hibernate configuration for testing
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+        use_sql_comments: true
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+        generate_statistics: false
+  
+  # H2 Console for debugging (disabled in tests)
+  h2:
+    console:
+      enabled: false
+  
+  # Test profile configuration
+  profiles:
+    active: test
+
+# Logging configuration for tests
+logging:
+  level:
+    org.hibernate.SQL: ERROR
+    org.hibernate.type.descriptor.sql.BasicBinder: ERROR
+    org.springframework.orm.jpa: ERROR
+    org.springframework.transaction: ERROR
+    com.exalt.ecosystem: DEBUG
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+# Test-specific configurations
+test:
+  database:
+    init-mode: always
+    continue-on-error: false
