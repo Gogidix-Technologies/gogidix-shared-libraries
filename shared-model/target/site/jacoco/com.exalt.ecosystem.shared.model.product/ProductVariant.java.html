@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProductVariant.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Exalt Shared Model Library</a> &gt; <a href="index.source.html" class="el_package">com.exalt.ecosystem.shared.model.product</a> &gt; <span class="el_source">ProductVariant.java</span></div><h1>ProductVariant.java</h1><pre class="source lang-java linenums">package com.exalt.ecosystem.shared.model.product;
+
+import com.exalt.ecosystem.shared.model.BaseEntity;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.experimental.SuperBuilder;
+
+import java.math.BigDecimal;
+
+/**
+ * Product variant entity representing different variations of a product.
+ * Examples: different sizes, colors, materials, etc.
+ * 
+ * @author Exalt Development Team
+ * @since 1.0.0
+ */
+@Entity
+@Table(name = &quot;product_variants&quot;, indexes = {
+    @Index(name = &quot;idx_variant_product_id&quot;, columnList = &quot;product_id&quot;),
+    @Index(name = &quot;idx_variant_sku&quot;, columnList = &quot;sku&quot;, unique = true),
+    @Index(name = &quot;idx_variant_barcode&quot;, columnList = &quot;barcode&quot;),
+    @Index(name = &quot;idx_variant_available&quot;, columnList = &quot;available&quot;),
+    @Index(name = &quot;idx_variant_price&quot;, columnList = &quot;price&quot;),
+    @Index(name = &quot;idx_variant_position&quot;, columnList = &quot;position&quot;)
+})
+@Getter
+<span class="nc" id="L30">@Setter</span>
+<span class="nc" id="L31">@NoArgsConstructor</span>
+<span class="nc" id="L32">@AllArgsConstructor</span>
+<span class="nc" id="L33">@SuperBuilder</span>
+public class ProductVariant extends BaseEntity {
+    
+    /**
+     * The parent product this variant belongs to.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = &quot;product_id&quot;, nullable = false, 
+                foreignKey = @ForeignKey(name = &quot;fk_variant_product&quot;))
+<span class="nc" id="L42">    private Product product;</span>
+    
+    /**
+     * Variant-specific SKU.
+     */
+    @Column(name = &quot;sku&quot;, length = 50, unique = true)
+<span class="nc" id="L48">    private String sku;</span>
+    
+    /**
+     * Variant title/name.
+     */
+    @Column(name = &quot;title&quot;, length = 200, nullable = false)
+<span class="nc" id="L54">    private String title;</span>
+    
+    /**
+     * Variant price (overrides product price if set).
+     */
+    @Column(name = &quot;price&quot;, precision = 19, scale = 2)
+<span class="nc" id="L60">    private BigDecimal price;</span>
+    
+    /**
+     * Compare at price for this variant.
+     */
+    @Column(name = &quot;compare_at_price&quot;, precision = 19, scale = 2)
+<span class="nc" id="L66">    private BigDecimal compareAtPrice;</span>
+    
+    /**
+     * Cost price for this variant.
+     */
+    @Column(name = &quot;cost_price&quot;, precision = 19, scale = 2)
+<span class="nc" id="L72">    private BigDecimal costPrice;</span>
+    
+    /**
+     * Variant barcode/UPC.
+     */
+    @Column(name = &quot;barcode&quot;, length = 20)
+<span class="nc" id="L78">    private String barcode;</span>
+    
+    /**
+     * Variant weight in grams (overrides product weight if set).
+     */
+    @Column(name = &quot;weight&quot;, precision = 10, scale = 3)
+<span class="nc" id="L84">    private BigDecimal weight;</span>
+    
+    /**
+     * Variant inventory quantity.
+     */
+<span class="nc" id="L89">    @Column(name = &quot;inventory_quantity&quot;)</span>
+<span class="nc" id="L90">    private Integer inventoryQuantity = 0;</span>
+    
+    /**
+     * Inventory policy for this variant.
+     */
+<span class="nc" id="L95">    @Column(name = &quot;inventory_policy&quot;, length = 20)</span>
+<span class="nc" id="L96">    private String inventoryPolicy = &quot;deny&quot;; // deny, continue</span>
+    
+    /**
+     * Fulfillment service for this variant.
+     */
+<span class="nc" id="L101">    @Column(name = &quot;fulfillment_service&quot;, length = 50)</span>
+<span class="nc" id="L102">    private String fulfillmentService = &quot;manual&quot;;</span>
+    
+    /**
+     * Inventory management service.
+     */
+    @Column(name = &quot;inventory_management&quot;, length = 50)
+<span class="nc" id="L108">    private String inventoryManagement;</span>
+    
+    /**
+     * Whether this variant requires shipping.
+     */
+<span class="nc" id="L113">    @Column(name = &quot;requires_shipping&quot;, nullable = false)</span>
+<span class="nc" id="L114">    private boolean requiresShipping = true;</span>
+    
+    /**
+     * Whether this variant is taxable.
+     */
+<span class="nc" id="L119">    @Column(name = &quot;taxable&quot;, nullable = false)</span>
+<span class="nc" id="L120">    private boolean taxable = true;</span>
+    
+    /**
+     * Tax code for this specific variant.
+     */
+    @Column(name = &quot;tax_code&quot;, length = 20)
+<span class="nc" id="L126">    private String taxCode;</span>
+    
+    /**
+     * Position/order of this variant in the list.
+     */
+<span class="nc" id="L131">    @Column(name = &quot;position&quot;)</span>
+<span class="nc" id="L132">    private Integer position = 1;</span>
+    
+    /**
+     * Option 1 value (e.g., &quot;Red&quot; for color option).
+     */
+    @Column(name = &quot;option1&quot;, length = 100)
+<span class="nc" id="L138">    private String option1;</span>
+    
+    /**
+     * Option 2 value (e.g., &quot;Large&quot; for size option).
+     */
+    @Column(name = &quot;option2&quot;, length = 100)
+<span class="nc" id="L144">    private String option2;</span>
+    
+    /**
+     * Option 3 value (e.g., &quot;Cotton&quot; for material option).
+     */
+    @Column(name = &quot;option3&quot;, length = 100)
+<span class="nc" id="L150">    private String option3;</span>
+    
+    /**
+     * Variant image URL.
+     */
+    @Column(name = &quot;image_url&quot;, length = 500)
+<span class="nc" id="L156">    private String imageUrl;</span>
+    
+    /**
+     * Whether this variant is available for purchase.
+     */
+<span class="nc" id="L161">    @Column(name = &quot;available&quot;, nullable = false)</span>
+<span class="nc" id="L162">    private boolean available = true;</span>
+    
+    /**
+     * Variant-specific metadata as JSON.
+     */
+    @Column(name = &quot;metadata&quot;, columnDefinition = &quot;TEXT&quot;)
+<span class="nc" id="L168">    private String metadata;</span>
+    
+    /**
+     * Gets the effective price for this variant.
+     * Returns variant price if set, otherwise parent product price.
+     * 
+     * @return The effective price
+     */
+    @Transient
+    public BigDecimal getEffectivePrice() {
+<span class="nc bnc" id="L178" title="All 2 branches missed.">        if (price != null) {</span>
+<span class="nc" id="L179">            return price;</span>
+        }
+<span class="nc bnc" id="L181" title="All 2 branches missed.">        return product != null ? product.getPrice() : BigDecimal.ZERO;</span>
+    }
+    
+    /**
+     * Gets the effective compare at price for this variant.
+     * 
+     * @return The effective compare at price
+     */
+    @Transient
+    public BigDecimal getEffectiveCompareAtPrice() {
+<span class="nc bnc" id="L191" title="All 2 branches missed.">        if (compareAtPrice != null) {</span>
+<span class="nc" id="L192">            return compareAtPrice;</span>
+        }
+<span class="nc bnc" id="L194" title="All 2 branches missed.">        return product != null ? product.getCompareAtPrice() : null;</span>
+    }
+    
+    /**
+     * Gets the effective weight for this variant.
+     * 
+     * @return The effective weight in grams
+     */
+    @Transient
+    public BigDecimal getEffectiveWeight() {
+<span class="nc bnc" id="L204" title="All 2 branches missed.">        if (weight != null) {</span>
+<span class="nc" id="L205">            return weight;</span>
+        }
+<span class="nc bnc" id="L207" title="All 2 branches missed.">        return product != null ? product.getWeight() : null;</span>
+    }
+    
+    /**
+     * Checks if this variant is on sale.
+     * 
+     * @return true if variant has a compare at price higher than current price
+     */
+    @Transient
+    public boolean isOnSale() {
+<span class="nc" id="L217">        BigDecimal effectivePrice = getEffectivePrice();</span>
+<span class="nc" id="L218">        BigDecimal effectiveComparePrice = getEffectiveCompareAtPrice();</span>
+        
+<span class="nc bnc" id="L220" title="All 2 branches missed.">        return effectiveComparePrice != null &amp;&amp; </span>
+<span class="nc bnc" id="L221" title="All 2 branches missed.">               effectiveComparePrice.compareTo(effectivePrice) &gt; 0;</span>
+    }
+    
+    /**
+     * Gets the discount percentage if on sale.
+     * 
+     * @return Discount percentage or null if not on sale
+     */
+    @Transient
+    public BigDecimal getDiscountPercentage() {
+<span class="nc bnc" id="L231" title="All 2 branches missed.">        if (!isOnSale()) {</span>
+<span class="nc" id="L232">            return null;</span>
+        }
+        
+<span class="nc" id="L235">        BigDecimal effectivePrice = getEffectivePrice();</span>
+<span class="nc" id="L236">        BigDecimal effectiveComparePrice = getEffectiveCompareAtPrice();</span>
+        
+<span class="nc" id="L238">        BigDecimal discount = effectiveComparePrice.subtract(effectivePrice);</span>
+<span class="nc" id="L239">        return discount.divide(effectiveComparePrice, 4, BigDecimal.ROUND_HALF_UP)</span>
+<span class="nc" id="L240">                      .multiply(new BigDecimal(&quot;100&quot;));</span>
+    }
+    
+    /**
+     * Checks if this variant is in stock.
+     * 
+     * @return true if variant is in stock
+     */
+    @Transient
+    public boolean isInStock() {
+<span class="nc bnc" id="L250" title="All 4 branches missed.">        if (product != null &amp;&amp; !product.isTrackInventory()) {</span>
+<span class="nc" id="L251">            return true;</span>
+        }
+<span class="nc bnc" id="L253" title="All 4 branches missed.">        return inventoryQuantity != null &amp;&amp; inventoryQuantity &gt; 0;</span>
+    }
+    
+    /**
+     * Checks if this variant can be backordered.
+     * 
+     * @return true if inventory policy allows continue when out of stock
+     */
+    @Transient
+    public boolean canBackorder() {
+<span class="nc" id="L263">        return &quot;continue&quot;.equals(inventoryPolicy);</span>
+    }
+    
+    /**
+     * Gets the formatted option values as a string.
+     * 
+     * @return Formatted option string (e.g., &quot;Red / Large / Cotton&quot;)
+     */
+    @Transient
+    public String getFormattedOptions() {
+<span class="nc" id="L273">        StringBuilder options = new StringBuilder();</span>
+        
+<span class="nc bnc" id="L275" title="All 4 branches missed.">        if (option1 != null &amp;&amp; !option1.trim().isEmpty()) {</span>
+<span class="nc" id="L276">            options.append(option1.trim());</span>
+        }
+        
+<span class="nc bnc" id="L279" title="All 4 branches missed.">        if (option2 != null &amp;&amp; !option2.trim().isEmpty()) {</span>
+<span class="nc bnc" id="L280" title="All 2 branches missed.">            if (options.length() &gt; 0) {</span>
+<span class="nc" id="L281">                options.append(&quot; / &quot;);</span>
+            }
+<span class="nc" id="L283">            options.append(option2.trim());</span>
+        }
+        
+<span class="nc bnc" id="L286" title="All 4 branches missed.">        if (option3 != null &amp;&amp; !option3.trim().isEmpty()) {</span>
+<span class="nc bnc" id="L287" title="All 2 branches missed.">            if (options.length() &gt; 0) {</span>
+<span class="nc" id="L288">                options.append(&quot; / &quot;);</span>
+            }
+<span class="nc" id="L290">            options.append(option3.trim());</span>
+        }
+        
+<span class="nc bnc" id="L293" title="All 2 branches missed.">        return options.length() &gt; 0 ? options.toString() : &quot;Default&quot;;</span>
+    }
+    
+    /**
+     * Gets the full variant title including options.
+     * 
+     * @return Full variant title
+     */
+    @Transient
+    public String getFullTitle() {
+<span class="nc bnc" id="L303" title="All 2 branches missed.">        if (product != null) {</span>
+<span class="nc" id="L304">            String baseTitle = product.getName();</span>
+<span class="nc" id="L305">            String options = getFormattedOptions();</span>
+            
+<span class="nc bnc" id="L307" title="All 2 branches missed.">            if (!&quot;Default&quot;.equals(options)) {</span>
+<span class="nc" id="L308">                return baseTitle + &quot; - &quot; + options;</span>
+            }
+<span class="nc" id="L310">            return baseTitle;</span>
+        }
+<span class="nc" id="L312">        return title;</span>
+    }
+    
+    /**
+     * Checks if this variant is purchasable.
+     * 
+     * @return true if variant can be purchased
+     */
+    @Transient
+    public boolean isPurchasable() {
+<span class="nc bnc" id="L322" title="All 8 branches missed.">        return available &amp;&amp; (isInStock() || canBackorder()) &amp;&amp; </span>
+<span class="nc bnc" id="L323" title="All 2 branches missed.">               product != null &amp;&amp; product.isAvailable();</span>
+    }
+    
+    /**
+     * Decrements inventory quantity for a purchase.
+     * 
+     * @param quantity The quantity to decrement
+     * @return true if decrement was successful
+     */
+    public boolean decrementInventory(int quantity) {
+<span class="nc bnc" id="L333" title="All 4 branches missed.">        if (!isInStock() || inventoryQuantity &lt; quantity) {</span>
+<span class="nc bnc" id="L334" title="All 2 branches missed.">            if (!canBackorder()) {</span>
+<span class="nc" id="L335">                return false;</span>
+            }
+        }
+        
+<span class="nc bnc" id="L339" title="All 2 branches missed.">        if (inventoryQuantity != null) {</span>
+<span class="nc" id="L340">            inventoryQuantity -= quantity;</span>
+<span class="nc bnc" id="L341" title="All 4 branches missed.">            if (inventoryQuantity &lt; 0 &amp;&amp; !canBackorder()) {</span>
+<span class="nc" id="L342">                inventoryQuantity = 0;</span>
+<span class="nc" id="L343">                return false;</span>
+            }
+        }
+        
+<span class="nc" id="L347">        return true;</span>
+    }
+    
+    /**
+     * Increments inventory quantity for a return or restock.
+     * 
+     * @param quantity The quantity to increment
+     */
+    public void incrementInventory(int quantity) {
+<span class="nc bnc" id="L356" title="All 2 branches missed.">        if (inventoryQuantity == null) {</span>
+<span class="nc" id="L357">            inventoryQuantity = quantity;</span>
+        } else {
+<span class="nc" id="L359">            inventoryQuantity += quantity;</span>
+        }
+<span class="nc" id="L361">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

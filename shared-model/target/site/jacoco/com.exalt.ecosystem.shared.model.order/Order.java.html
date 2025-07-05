@@ -1,0 +1,559 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Order.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Exalt Shared Model Library</a> &gt; <a href="index.source.html" class="el_package">com.exalt.ecosystem.shared.model.order</a> &gt; <span class="el_source">Order.java</span></div><h1>Order.java</h1><pre class="source lang-java linenums">package com.exalt.ecosystem.shared.model.order;
+
+import com.exalt.ecosystem.shared.model.BaseEntity;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.experimental.SuperBuilder;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+/**
+ * Core order entity representing customer orders across all microservices.
+ * Provides common order attributes and relationships.
+ * 
+ * @author Exalt Development Team
+ * @since 1.0.0
+ */
+@Entity
+@Table(name = &quot;orders&quot;, indexes = {
+    @Index(name = &quot;idx_order_number&quot;, columnList = &quot;orderNumber&quot;, unique = true),
+    @Index(name = &quot;idx_order_customer_id&quot;, columnList = &quot;customerId&quot;),
+    @Index(name = &quot;idx_order_vendor_id&quot;, columnList = &quot;vendorId&quot;),
+    @Index(name = &quot;idx_order_status&quot;, columnList = &quot;status&quot;),
+    @Index(name = &quot;idx_order_payment_status&quot;, columnList = &quot;paymentStatus&quot;),
+    @Index(name = &quot;idx_order_fulfillment_status&quot;, columnList = &quot;fulfillmentStatus&quot;),
+    @Index(name = &quot;idx_order_total&quot;, columnList = &quot;totalAmount&quot;),
+    @Index(name = &quot;idx_order_created_at&quot;, columnList = &quot;created_at&quot;),
+    @Index(name = &quot;idx_order_processed_at&quot;, columnList = &quot;processedAt&quot;)
+})
+@Getter
+<span class="nc" id="L37">@Setter</span>
+<span class="nc" id="L38">@NoArgsConstructor</span>
+<span class="nc" id="L39">@AllArgsConstructor</span>
+<span class="nc" id="L40">@SuperBuilder</span>
+public class Order extends BaseEntity {
+    
+    /**
+     * Unique order number for customer reference.
+     */
+    @Column(name = &quot;order_number&quot;, length = 20, nullable = false, unique = true)
+<span class="nc" id="L47">    private String orderNumber;</span>
+    
+    /**
+     * Customer who placed the order.
+     */
+    @Column(name = &quot;customer_id&quot;, nullable = false)
+<span class="nc" id="L53">    private UUID customerId;</span>
+    
+    /**
+     * Primary vendor for this order (in case of multi-vendor).
+     */
+    @Column(name = &quot;vendor_id&quot;)
+<span class="nc" id="L59">    private UUID vendorId;</span>
+    
+    /**
+     * Current order status.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = &quot;status&quot;, nullable = false)
+<span class="nc" id="L66">    private OrderStatus status;</span>
+    
+    /**
+     * Payment status of the order.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = &quot;payment_status&quot;, nullable = false)
+<span class="nc" id="L73">    private PaymentStatus paymentStatus;</span>
+    
+    /**
+     * Fulfillment status of the order.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = &quot;fulfillment_status&quot;, nullable = false)
+<span class="nc" id="L80">    private FulfillmentStatus fulfillmentStatus;</span>
+    
+    /**
+     * Subtotal amount (before tax and shipping).
+     */
+    @Column(name = &quot;subtotal_amount&quot;, precision = 19, scale = 2, nullable = false)
+<span class="nc" id="L86">    private BigDecimal subtotalAmount;</span>
+    
+    /**
+     * Total tax amount.
+     */
+<span class="nc" id="L91">    @Column(name = &quot;tax_amount&quot;, precision = 19, scale = 2, nullable = false)</span>
+<span class="nc" id="L92">    private BigDecimal taxAmount = BigDecimal.ZERO;</span>
+    
+    /**
+     * Total shipping cost.
+     */
+<span class="nc" id="L97">    @Column(name = &quot;shipping_amount&quot;, precision = 19, scale = 2, nullable = false)</span>
+<span class="nc" id="L98">    private BigDecimal shippingAmount = BigDecimal.ZERO;</span>
+    
+    /**
+     * Total discount amount.
+     */
+<span class="nc" id="L103">    @Column(name = &quot;discount_amount&quot;, precision = 19, scale = 2, nullable = false)</span>
+<span class="nc" id="L104">    private BigDecimal discountAmount = BigDecimal.ZERO;</span>
+    
+    /**
+     * Total order amount.
+     */
+    @Column(name = &quot;total_amount&quot;, precision = 19, scale = 2, nullable = false)
+<span class="nc" id="L110">    private BigDecimal totalAmount;</span>
+    
+    /**
+     * Currency code for all amounts.
+     */
+    @Column(name = &quot;currency_code&quot;, length = 3, nullable = false)
+<span class="nc" id="L116">    private String currencyCode;</span>
+    
+    /**
+     * Customer email address.
+     */
+    @Column(name = &quot;customer_email&quot;, length = 100, nullable = false)
+<span class="nc" id="L122">    private String customerEmail;</span>
+    
+    /**
+     * Customer phone number.
+     */
+    @Column(name = &quot;customer_phone&quot;, length = 20)
+<span class="nc" id="L128">    private String customerPhone;</span>
+    
+    /**
+     * Billing address as JSON.
+     */
+    @Column(name = &quot;billing_address&quot;, columnDefinition = &quot;TEXT&quot;)
+<span class="nc" id="L134">    private String billingAddress;</span>
+    
+    /**
+     * Shipping address as JSON.
+     */
+    @Column(name = &quot;shipping_address&quot;, columnDefinition = &quot;TEXT&quot;)
+<span class="nc" id="L140">    private String shippingAddress;</span>
+    
+    /**
+     * Payment method used.
+     */
+    @Column(name = &quot;payment_method&quot;, length = 50)
+<span class="nc" id="L146">    private String paymentMethod;</span>
+    
+    /**
+     * Payment gateway used.
+     */
+    @Column(name = &quot;payment_gateway&quot;, length = 50)
+<span class="nc" id="L152">    private String paymentGateway;</span>
+    
+    /**
+     * Payment transaction ID.
+     */
+    @Column(name = &quot;payment_transaction_id&quot;, length = 100)
+<span class="nc" id="L158">    private String paymentTransactionId;</span>
+    
+    /**
+     * Shipping method selected.
+     */
+    @Column(name = &quot;shipping_method&quot;, length = 100)
+<span class="nc" id="L164">    private String shippingMethod;</span>
+    
+    /**
+     * Shipping carrier.
+     */
+    @Column(name = &quot;shipping_carrier&quot;, length = 50)
+<span class="nc" id="L170">    private String shippingCarrier;</span>
+    
+    /**
+     * Tracking number for shipment.
+     */
+    @Column(name = &quot;tracking_number&quot;, length = 100)
+<span class="nc" id="L176">    private String trackingNumber;</span>
+    
+    /**
+     * Tracking URL for shipment.
+     */
+    @Column(name = &quot;tracking_url&quot;, length = 500)
+<span class="nc" id="L182">    private String trackingUrl;</span>
+    
+    /**
+     * Applied coupon code.
+     */
+    @Column(name = &quot;coupon_code&quot;, length = 50)
+<span class="nc" id="L188">    private String couponCode;</span>
+    
+    /**
+     * Gift message for the order.
+     */
+    @Column(name = &quot;gift_message&quot;, length = 500)
+<span class="nc" id="L194">    private String giftMessage;</span>
+    
+    /**
+     * Special instructions from customer.
+     */
+    @Column(name = &quot;special_instructions&quot;, length = 1000)
+<span class="nc" id="L200">    private String specialInstructions;</span>
+    
+    /**
+     * Order source (web, mobile, api, etc.).
+     */
+<span class="nc" id="L205">    @Column(name = &quot;order_source&quot;, length = 50, nullable = false)</span>
+<span class="nc" id="L206">    private String orderSource = &quot;web&quot;;</span>
+    
+    /**
+     * Sales channel (online, in-store, etc.).
+     */
+    @Column(name = &quot;sales_channel&quot;, length = 50)
+<span class="nc" id="L212">    private String salesChannel;</span>
+    
+    /**
+     * Marketing campaign source.
+     */
+    @Column(name = &quot;campaign_source&quot;, length = 100)
+<span class="nc" id="L218">    private String campaignSource;</span>
+    
+    /**
+     * Referrer URL.
+     */
+    @Column(name = &quot;referrer_url&quot;, length = 500)
+<span class="nc" id="L224">    private String referrerUrl;</span>
+    
+    /**
+     * Landing page URL.
+     */
+    @Column(name = &quot;landing_page_url&quot;, length = 500)
+<span class="nc" id="L230">    private String landingPageUrl;</span>
+    
+    /**
+     * Whether this is a guest checkout.
+     */
+<span class="nc" id="L235">    @Column(name = &quot;guest_checkout&quot;, nullable = false)</span>
+<span class="nc" id="L236">    private boolean guestCheckout = false;</span>
+    
+    /**
+     * Whether this order is a test order.
+     */
+<span class="nc" id="L241">    @Column(name = &quot;test_order&quot;, nullable = false)</span>
+<span class="nc" id="L242">    private boolean testOrder = false;</span>
+    
+    /**
+     * Whether this order requires manual review.
+     */
+<span class="nc" id="L247">    @Column(name = &quot;requires_review&quot;, nullable = false)</span>
+<span class="nc" id="L248">    private boolean requiresReview = false;</span>
+    
+    /**
+     * Risk assessment score (0-100).
+     */
+    @Column(name = &quot;risk_score&quot;)
+<span class="nc" id="L254">    private Integer riskScore;</span>
+    
+    /**
+     * Risk assessment level.
+     */
+    @Column(name = &quot;risk_level&quot;, length = 20)
+<span class="nc" id="L260">    private String riskLevel;</span>
+    
+    /**
+     * When the order was processed.
+     */
+    @Column(name = &quot;processed_at&quot;)
+<span class="nc" id="L266">    private LocalDateTime processedAt;</span>
+    
+    /**
+     * When the order was shipped.
+     */
+    @Column(name = &quot;shipped_at&quot;)
+<span class="nc" id="L272">    private LocalDateTime shippedAt;</span>
+    
+    /**
+     * When the order was delivered.
+     */
+    @Column(name = &quot;delivered_at&quot;)
+<span class="nc" id="L278">    private LocalDateTime deliveredAt;</span>
+    
+    /**
+     * When the order was cancelled.
+     */
+    @Column(name = &quot;cancelled_at&quot;)
+<span class="nc" id="L284">    private LocalDateTime cancelledAt;</span>
+    
+    /**
+     * Reason for cancellation.
+     */
+    @Column(name = &quot;cancellation_reason&quot;, length = 500)
+<span class="nc" id="L290">    private String cancellationReason;</span>
+    
+    /**
+     * Estimated delivery date.
+     */
+    @Column(name = &quot;estimated_delivery_date&quot;)
+<span class="nc" id="L296">    private LocalDateTime estimatedDeliveryDate;</span>
+    
+    /**
+     * Order weight in grams.
+     */
+    @Column(name = &quot;total_weight&quot;, precision = 10, scale = 3)
+<span class="nc" id="L302">    private BigDecimal totalWeight;</span>
+    
+    /**
+     * Number of items in the order.
+     */
+<span class="nc" id="L307">    @Column(name = &quot;item_count&quot;, nullable = false)</span>
+<span class="nc" id="L308">    private Integer itemCount = 0;</span>
+    
+    /**
+     * Total quantity of all items.
+     */
+<span class="nc" id="L313">    @Column(name = &quot;total_quantity&quot;, nullable = false)</span>
+<span class="nc" id="L314">    private Integer totalQuantity = 0;</span>
+    
+    /**
+     * Order items.
+     */
+<span class="nc" id="L319">    @OneToMany(mappedBy = &quot;order&quot;, cascade = CascadeType.ALL, fetch = FetchType.LAZY)</span>
+<span class="nc" id="L320">    private List&lt;OrderItem&gt; items = new ArrayList&lt;&gt;();</span>
+    
+    /**
+     * Order metadata as JSON.
+     */
+    @Column(name = &quot;metadata&quot;, columnDefinition = &quot;TEXT&quot;)
+<span class="nc" id="L326">    private String metadata;</span>
+    
+    /**
+     * Internal notes for the order.
+     */
+    @Column(name = &quot;internal_notes&quot;, columnDefinition = &quot;TEXT&quot;)
+<span class="nc" id="L332">    private String internalNotes;</span>
+    
+    /**
+     * Order tags for categorization.
+     */
+    @Column(name = &quot;tags&quot;, length = 500)
+<span class="nc" id="L338">    private String tags;</span>
+    
+    /**
+     * Gets the final total after all calculations.
+     * 
+     * @return Final total amount
+     */
+    @Transient
+    public BigDecimal getFinalTotal() {
+<span class="nc" id="L347">        return subtotalAmount</span>
+<span class="nc" id="L348">                .add(taxAmount)</span>
+<span class="nc" id="L349">                .add(shippingAmount)</span>
+<span class="nc" id="L350">                .subtract(discountAmount);</span>
+    }
+    
+    /**
+     * Checks if the order is paid.
+     * 
+     * @return true if order is fully paid
+     */
+    @Transient
+    public boolean isPaid() {
+<span class="nc bnc" id="L360" title="All 4 branches missed.">        return paymentStatus == PaymentStatus.PAID || </span>
+               paymentStatus == PaymentStatus.PARTIALLY_REFUNDED;
+    }
+    
+    /**
+     * Checks if the order is shipped.
+     * 
+     * @return true if order has been shipped
+     */
+    @Transient
+    public boolean isShipped() {
+<span class="nc bnc" id="L371" title="All 4 branches missed.">        return fulfillmentStatus == FulfillmentStatus.SHIPPED || </span>
+               fulfillmentStatus == FulfillmentStatus.DELIVERED;
+    }
+    
+    /**
+     * Checks if the order is delivered.
+     * 
+     * @return true if order has been delivered
+     */
+    @Transient
+    public boolean isDelivered() {
+<span class="nc bnc" id="L382" title="All 2 branches missed.">        return fulfillmentStatus == FulfillmentStatus.DELIVERED;</span>
+    }
+    
+    /**
+     * Checks if the order can be cancelled.
+     * 
+     * @return true if order can be cancelled
+     */
+    @Transient
+    public boolean canBeCancelled() {
+<span class="nc bnc" id="L392" title="All 8 branches missed.">        return status != OrderStatus.CANCELLED &amp;&amp; </span>
+               status != OrderStatus.REFUNDED &amp;&amp;
+               fulfillmentStatus != FulfillmentStatus.SHIPPED &amp;&amp;
+               fulfillmentStatus != FulfillmentStatus.DELIVERED;
+    }
+    
+    /**
+     * Checks if the order can be refunded.
+     * 
+     * @return true if order can be refunded
+     */
+    @Transient
+    public boolean canBeRefunded() {
+<span class="nc bnc" id="L405" title="All 4 branches missed.">        return isPaid() &amp;&amp; status != OrderStatus.CANCELLED;</span>
+    }
+    
+    /**
+     * Gets the display status for the order.
+     * 
+     * @return Human-readable status
+     */
+    @Transient
+    public String getDisplayStatus() {
+<span class="nc bnc" id="L415" title="All 2 branches missed.">        if (status == OrderStatus.CANCELLED) {</span>
+<span class="nc" id="L416">            return &quot;Cancelled&quot;;</span>
+        }
+        
+<span class="nc bnc" id="L419" title="All 5 branches missed.">        switch (fulfillmentStatus) {</span>
+            case DELIVERED:
+<span class="nc" id="L421">                return &quot;Delivered&quot;;</span>
+            case SHIPPED:
+<span class="nc" id="L423">                return &quot;Shipped&quot;;</span>
+            case FULFILLING:
+<span class="nc" id="L425">                return &quot;Processing&quot;;</span>
+            case PENDING:
+<span class="nc bnc" id="L427" title="All 2 branches missed.">                if (isPaid()) {</span>
+<span class="nc" id="L428">                    return &quot;Processing&quot;;</span>
+                } else {
+<span class="nc" id="L430">                    return &quot;Payment Pending&quot;;</span>
+                }
+            default:
+<span class="nc" id="L433">                return status.getDisplayName();</span>
+        }
+    }
+    
+    /**
+     * Adds an item to the order.
+     * 
+     * @param item The order item to add
+     */
+    public void addItem(OrderItem item) {
+<span class="nc bnc" id="L443" title="All 2 branches missed.">        if (items == null) {</span>
+<span class="nc" id="L444">            items = new ArrayList&lt;&gt;();</span>
+        }
+<span class="nc" id="L446">        items.add(item);</span>
+<span class="nc" id="L447">        item.setOrder(this);</span>
+<span class="nc" id="L448">        recalculateTotals();</span>
+<span class="nc" id="L449">    }</span>
+    
+    /**
+     * Removes an item from the order.
+     * 
+     * @param item The order item to remove
+     */
+    public void removeItem(OrderItem item) {
+<span class="nc bnc" id="L457" title="All 2 branches missed.">        if (items != null) {</span>
+<span class="nc" id="L458">            items.remove(item);</span>
+<span class="nc" id="L459">            item.setOrder(null);</span>
+<span class="nc" id="L460">            recalculateTotals();</span>
+        }
+<span class="nc" id="L462">    }</span>
+    
+    /**
+     * Recalculates order totals based on items.
+     */
+    public void recalculateTotals() {
+<span class="nc bnc" id="L468" title="All 4 branches missed.">        if (items == null || items.isEmpty()) {</span>
+<span class="nc" id="L469">            subtotalAmount = BigDecimal.ZERO;</span>
+<span class="nc" id="L470">            totalAmount = BigDecimal.ZERO;</span>
+<span class="nc" id="L471">            itemCount = 0;</span>
+<span class="nc" id="L472">            totalQuantity = 0;</span>
+<span class="nc" id="L473">            totalWeight = BigDecimal.ZERO;</span>
+<span class="nc" id="L474">            return;</span>
+        }
+        
+<span class="nc" id="L477">        subtotalAmount = items.stream()</span>
+<span class="nc" id="L478">                .map(OrderItem::getTotalPrice)</span>
+<span class="nc" id="L479">                .reduce(BigDecimal.ZERO, BigDecimal::add);</span>
+        
+<span class="nc" id="L481">        itemCount = items.size();</span>
+        
+<span class="nc" id="L483">        totalQuantity = items.stream()</span>
+<span class="nc" id="L484">                .mapToInt(OrderItem::getQuantity)</span>
+<span class="nc" id="L485">                .sum();</span>
+        
+<span class="nc" id="L487">        totalWeight = items.stream()</span>
+<span class="nc" id="L488">                .map(item -&gt; {</span>
+<span class="nc" id="L489">                    BigDecimal weight = item.getWeight();</span>
+<span class="nc bnc" id="L490" title="All 2 branches missed.">                    return weight != null ? </span>
+<span class="nc" id="L491">                        weight.multiply(new BigDecimal(item.getQuantity())) : </span>
+<span class="nc" id="L492">                        BigDecimal.ZERO;</span>
+                })
+<span class="nc" id="L494">                .reduce(BigDecimal.ZERO, BigDecimal::add);</span>
+        
+<span class="nc" id="L496">        totalAmount = getFinalTotal();</span>
+<span class="nc" id="L497">    }</span>
+    
+    /**
+     * Marks the order as processed.
+     */
+    public void markAsProcessed() {
+<span class="nc" id="L503">        this.status = OrderStatus.PROCESSING;</span>
+<span class="nc" id="L504">        this.processedAt = LocalDateTime.now();</span>
+<span class="nc" id="L505">    }</span>
+    
+    /**
+     * Marks the order as shipped.
+     * 
+     * @param trackingNumber The tracking number
+     * @param carrier The shipping carrier
+     */
+    public void markAsShipped(String trackingNumber, String carrier) {
+<span class="nc" id="L514">        this.fulfillmentStatus = FulfillmentStatus.SHIPPED;</span>
+<span class="nc" id="L515">        this.shippedAt = LocalDateTime.now();</span>
+<span class="nc" id="L516">        this.trackingNumber = trackingNumber;</span>
+<span class="nc" id="L517">        this.shippingCarrier = carrier;</span>
+        
+<span class="nc bnc" id="L519" title="All 2 branches missed.">        if (this.status == OrderStatus.PROCESSING) {</span>
+<span class="nc" id="L520">            this.status = OrderStatus.SHIPPED;</span>
+        }
+<span class="nc" id="L522">    }</span>
+    
+    /**
+     * Marks the order as delivered.
+     */
+    public void markAsDelivered() {
+<span class="nc" id="L528">        this.fulfillmentStatus = FulfillmentStatus.DELIVERED;</span>
+<span class="nc" id="L529">        this.deliveredAt = LocalDateTime.now();</span>
+<span class="nc" id="L530">        this.status = OrderStatus.COMPLETED;</span>
+<span class="nc" id="L531">    }</span>
+    
+    /**
+     * Cancels the order.
+     * 
+     * @param reason The cancellation reason
+     */
+    public void cancel(String reason) {
+<span class="nc" id="L539">        this.status = OrderStatus.CANCELLED;</span>
+<span class="nc" id="L540">        this.cancelledAt = LocalDateTime.now();</span>
+<span class="nc" id="L541">        this.cancellationReason = reason;</span>
+<span class="nc" id="L542">    }</span>
+    
+    /**
+     * Updates the payment status.
+     * 
+     * @param newStatus The new payment status
+     * @param transactionId The transaction ID
+     */
+    public void updatePaymentStatus(PaymentStatus newStatus, String transactionId) {
+<span class="nc" id="L551">        this.paymentStatus = newStatus;</span>
+<span class="nc" id="L552">        this.paymentTransactionId = transactionId;</span>
+        
+<span class="nc bnc" id="L554" title="All 4 branches missed.">        if (newStatus == PaymentStatus.PAID &amp;&amp; status == OrderStatus.PENDING) {</span>
+<span class="nc" id="L555">            markAsProcessed();</span>
+        }
+<span class="nc" id="L557">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

@@ -1,0 +1,3 @@
+com/exalt/ecosystem/shared/messaging/EventPublisher.class
+com/exalt/ecosystem/shared/messaging/DomainEvent.class
+com/exalt/ecosystem/shared/messaging/EventPublisher$EventPublishingException.class

@@ -1,0 +1,4 @@
+com/exalt/ecosystem/shared/messaging/DomainEventTest$EventCreationTests.class
+com/exalt/ecosystem/shared/messaging/DomainEventTest$EventMetadataTests.class
+com/exalt/ecosystem/shared/messaging/DomainEventTest.class
+com/exalt/ecosystem/shared/messaging/EventPublisherTest.class

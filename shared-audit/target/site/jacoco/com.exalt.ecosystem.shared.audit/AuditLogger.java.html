@@ -1,0 +1,408 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuditLogger.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Exalt Shared Audit Library</a> &gt; <a href="index.source.html" class="el_package">com.exalt.ecosystem.shared.audit</a> &gt; <span class="el_source">AuditLogger.java</span></div><h1>AuditLogger.java</h1><pre class="source lang-java linenums">package com.exalt.ecosystem.shared.audit;
+
+import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+
+/**
+ * Interface for audit logging in the Exalt Social E-commerce Ecosystem.
+ * Provides methods for recording audit events with various levels of detail and async support.
+ * 
+ * @author Exalt Development Team
+ * @since 1.0.0
+ */
+public interface AuditLogger {
+    
+    /**
+     * Logs an audit event synchronously.
+     * 
+     * @param event Audit event to log
+     */
+    void audit(AuditEvent event);
+    
+    /**
+     * Logs an audit event asynchronously.
+     * 
+     * @param event Audit event to log
+     * @return Future representing the logging operation
+     */
+    CompletableFuture&lt;Void&gt; auditAsync(AuditEvent event);
+    
+    /**
+     * Logs a simple audit event.
+     * 
+     * @param action Action being audited
+     * @param resourceType Type of resource
+     * @param resourceId Resource identifier
+     * @param userId User performing the action
+     */
+    void audit(AuditEvent.AuditAction action, String resourceType, String resourceId, String userId);
+    
+    /**
+     * Logs a simple audit event asynchronously.
+     * 
+     * @param action Action being audited
+     * @param resourceType Type of resource
+     * @param resourceId Resource identifier
+     * @param userId User performing the action
+     * @return Future representing the logging operation
+     */
+    CompletableFuture&lt;Void&gt; auditAsync(AuditEvent.AuditAction action, String resourceType, String resourceId, String userId);
+    
+    /**
+     * Logs an audit event with additional context.
+     * 
+     * @param action Action being audited
+     * @param resourceType Type of resource
+     * @param resourceId Resource identifier
+     * @param userId User performing the action
+     * @param description Description of the action
+     * @param metadata Additional metadata
+     */
+    void audit(AuditEvent.AuditAction action, String resourceType, String resourceId, 
+               String userId, String description, Map&lt;String, Object&gt; metadata);
+    
+    /**
+     * Logs a security-related audit event.
+     * 
+     * @param action Security action
+     * @param userId User ID
+     * @param ipAddress IP address
+     * @param userAgent User agent
+     * @param success Whether the action succeeded
+     * @param description Description of the security event
+     */
+    void auditSecurity(AuditEvent.AuditAction action, String userId, String ipAddress, 
+                      String userAgent, boolean success, String description);
+    
+    /**
+     * Logs a compliance-related audit event.
+     * 
+     * @param action Compliance action
+     * @param resourceType Type of resource
+     * @param resourceId Resource identifier
+     * @param userId User performing the action
+     * @param complianceType Type of compliance (GDPR, PCI_DSS, etc.)
+     * @param complianceData Compliance-specific data
+     */
+    void auditCompliance(AuditEvent.AuditAction action, String resourceType, String resourceId,
+                        String userId, String complianceType, Map&lt;String, Object&gt; complianceData);
+    
+    /**
+     * Logs a data access audit event.
+     * 
+     * @param resourceType Type of data accessed
+     * @param resourceId Resource identifier
+     * @param userId User accessing the data
+     * @param accessType Type of access (READ, EXPORT, etc.)
+     * @param dataClassification Data classification level
+     */
+    void auditDataAccess(String resourceType, String resourceId, String userId, 
+                        String accessType, String dataClassification);
+    
+    /**
+     * Logs an API request audit event.
+     * 
+     * @param httpMethod HTTP method
+     * @param requestUri Request URI
+     * @param userId User making the request
+     * @param ipAddress IP address
+     * @param userAgent User agent
+     * @param httpStatus HTTP response status
+     * @param durationMs Request duration in milliseconds
+     */
+    void auditApiRequest(String httpMethod, String requestUri, String userId, 
+                        String ipAddress, String userAgent, int httpStatus, long durationMs);
+    
+    /**
+     * Logs a business process audit event.
+     * 
+     * @param processName Name of the business process
+     * @param processStep Current step in the process
+     * @param resourceId Resource being processed
+     * @param userId User initiating the process
+     * @param processData Process-specific data
+     * @param success Whether the step succeeded
+     */
+    void auditBusinessProcess(String processName, String processStep, String resourceId,
+                             String userId, Map&lt;String, Object&gt; processData, boolean success);
+    
+    /**
+     * Logs a configuration change audit event.
+     * 
+     * @param configType Type of configuration changed
+     * @param configKey Configuration key
+     * @param oldValue Previous value
+     * @param newValue New value
+     * @param userId User making the change
+     * @param reason Reason for the change
+     */
+    void auditConfigChange(String configType, String configKey, Object oldValue, 
+                          Object newValue, String userId, String reason);
+    
+    /**
+     * Logs an error or exception audit event.
+     * 
+     * @param action Action that caused the error
+     * @param resourceType Type of resource involved
+     * @param resourceId Resource identifier
+     * @param userId User involved in the error
+     * @param exception Exception that occurred
+     * @param additionalContext Additional context information
+     */
+    void auditError(AuditEvent.AuditAction action, String resourceType, String resourceId,
+                   String userId, Throwable exception, Map&lt;String, Object&gt; additionalContext);
+    
+    /**
+     * Starts an audit context for tracking related audit events.
+     * 
+     * @param correlationId Correlation ID for grouping events
+     * @param userId User ID for the context
+     * @param sessionId Session ID for the context
+     * @return Audit context
+     */
+    AuditContext startAuditContext(String correlationId, String userId, String sessionId);
+    
+    /**
+     * Searches audit events based on criteria.
+     * 
+     * @param criteria Search criteria
+     * @return Search results
+     */
+    AuditSearchResult searchAuditEvents(AuditSearchCriteria criteria);
+    
+    /**
+     * Gets audit statistics for a time period.
+     * 
+     * @param startTime Start time
+     * @param endTime End time
+     * @param groupBy Field to group statistics by
+     * @return Audit statistics
+     */
+    AuditStatistics getAuditStatistics(LocalDateTime startTime, LocalDateTime endTime, String groupBy);
+    
+    /**
+     * Exports audit events for compliance reporting.
+     * 
+     * @param criteria Export criteria
+     * @param format Export format (JSON, CSV, XML)
+     * @return Export result with download information
+     */
+    CompletableFuture&lt;AuditExportResult&gt; exportAuditEvents(AuditSearchCriteria criteria, String format);
+    
+    /**
+     * Audit context for tracking related events.
+     */
+    interface AuditContext extends AutoCloseable {
+        String getCorrelationId();
+        String getUserId();
+        String getSessionId();
+        void setTraceId(String traceId);
+        void addContextData(String key, Object value);
+        void audit(AuditEvent.AuditAction action, String resourceType, String resourceId);
+        void audit(AuditEvent.AuditAction action, String resourceType, String resourceId, String description);
+        CompletableFuture&lt;Void&gt; auditAsync(AuditEvent.AuditAction action, String resourceType, String resourceId);
+        
+        @Override
+        void close();
+    }
+    
+    /**
+     * Search criteria for audit events.
+     */
+<span class="nc" id="L213">    class AuditSearchCriteria {</span>
+        private LocalDateTime startTime;
+        private LocalDateTime endTime;
+        private String userId;
+        private String resourceType;
+        private String resourceId;
+        private AuditEvent.AuditAction action;
+        private AuditEvent.AuditSeverity severity;
+        private String serviceName;
+        private String category;
+        private Boolean success;
+        private String ipAddress;
+        private String correlationId;
+        private Map&lt;String, String&gt; tags;
+        private Map&lt;String, Object&gt; metadata;
+<span class="nc" id="L228">        private int page = 0;</span>
+<span class="nc" id="L229">        private int size = 100;</span>
+<span class="nc" id="L230">        private String sortBy = &quot;timestamp&quot;;</span>
+<span class="nc" id="L231">        private String sortDirection = &quot;DESC&quot;;</span>
+        
+        // Getters and setters with fluent interface
+<span class="nc" id="L234">        public LocalDateTime getStartTime() { return startTime; }</span>
+        public AuditSearchCriteria setStartTime(LocalDateTime startTime) { 
+<span class="nc" id="L236">            this.startTime = startTime; return this; </span>
+        }
+        
+<span class="nc" id="L239">        public LocalDateTime getEndTime() { return endTime; }</span>
+        public AuditSearchCriteria setEndTime(LocalDateTime endTime) { 
+<span class="nc" id="L241">            this.endTime = endTime; return this; </span>
+        }
+        
+<span class="nc" id="L244">        public String getUserId() { return userId; }</span>
+        public AuditSearchCriteria setUserId(String userId) { 
+<span class="nc" id="L246">            this.userId = userId; return this; </span>
+        }
+        
+<span class="nc" id="L249">        public String getResourceType() { return resourceType; }</span>
+        public AuditSearchCriteria setResourceType(String resourceType) { 
+<span class="nc" id="L251">            this.resourceType = resourceType; return this; </span>
+        }
+        
+<span class="nc" id="L254">        public String getResourceId() { return resourceId; }</span>
+        public AuditSearchCriteria setResourceId(String resourceId) { 
+<span class="nc" id="L256">            this.resourceId = resourceId; return this; </span>
+        }
+        
+<span class="nc" id="L259">        public AuditEvent.AuditAction getAction() { return action; }</span>
+        public AuditSearchCriteria setAction(AuditEvent.AuditAction action) { 
+<span class="nc" id="L261">            this.action = action; return this; </span>
+        }
+        
+<span class="nc" id="L264">        public AuditEvent.AuditSeverity getSeverity() { return severity; }</span>
+        public AuditSearchCriteria setSeverity(AuditEvent.AuditSeverity severity) { 
+<span class="nc" id="L266">            this.severity = severity; return this; </span>
+        }
+        
+<span class="nc" id="L269">        public String getServiceName() { return serviceName; }</span>
+        public AuditSearchCriteria setServiceName(String serviceName) { 
+<span class="nc" id="L271">            this.serviceName = serviceName; return this; </span>
+        }
+        
+<span class="nc" id="L274">        public String getCategory() { return category; }</span>
+        public AuditSearchCriteria setCategory(String category) { 
+<span class="nc" id="L276">            this.category = category; return this; </span>
+        }
+        
+<span class="nc" id="L279">        public Boolean getSuccess() { return success; }</span>
+        public AuditSearchCriteria setSuccess(Boolean success) { 
+<span class="nc" id="L281">            this.success = success; return this; </span>
+        }
+        
+<span class="nc" id="L284">        public String getIpAddress() { return ipAddress; }</span>
+        public AuditSearchCriteria setIpAddress(String ipAddress) { 
+<span class="nc" id="L286">            this.ipAddress = ipAddress; return this; </span>
+        }
+        
+<span class="nc" id="L289">        public String getCorrelationId() { return correlationId; }</span>
+        public AuditSearchCriteria setCorrelationId(String correlationId) { 
+<span class="nc" id="L291">            this.correlationId = correlationId; return this; </span>
+        }
+        
+<span class="nc" id="L294">        public Map&lt;String, String&gt; getTags() { return tags; }</span>
+        public AuditSearchCriteria setTags(Map&lt;String, String&gt; tags) { 
+<span class="nc" id="L296">            this.tags = tags; return this; </span>
+        }
+        
+<span class="nc" id="L299">        public Map&lt;String, Object&gt; getMetadata() { return metadata; }</span>
+        public AuditSearchCriteria setMetadata(Map&lt;String, Object&gt; metadata) { 
+<span class="nc" id="L301">            this.metadata = metadata; return this; </span>
+        }
+        
+<span class="nc" id="L304">        public int getPage() { return page; }</span>
+        public AuditSearchCriteria setPage(int page) { 
+<span class="nc" id="L306">            this.page = page; return this; </span>
+        }
+        
+<span class="nc" id="L309">        public int getSize() { return size; }</span>
+        public AuditSearchCriteria setSize(int size) { 
+<span class="nc" id="L311">            this.size = size; return this; </span>
+        }
+        
+<span class="nc" id="L314">        public String getSortBy() { return sortBy; }</span>
+        public AuditSearchCriteria setSortBy(String sortBy) { 
+<span class="nc" id="L316">            this.sortBy = sortBy; return this; </span>
+        }
+        
+<span class="nc" id="L319">        public String getSortDirection() { return sortDirection; }</span>
+        public AuditSearchCriteria setSortDirection(String sortDirection) { 
+<span class="nc" id="L321">            this.sortDirection = sortDirection; return this; </span>
+        }
+        
+        // Convenience methods
+        public AuditSearchCriteria timeRange(LocalDateTime start, LocalDateTime end) {
+<span class="nc" id="L326">            return setStartTime(start).setEndTime(end);</span>
+        }
+        
+        public AuditSearchCriteria forUser(String userId) {
+<span class="nc" id="L330">            return setUserId(userId);</span>
+        }
+        
+        public AuditSearchCriteria forResource(String resourceType, String resourceId) {
+<span class="nc" id="L334">            return setResourceType(resourceType).setResourceId(resourceId);</span>
+        }
+        
+        public AuditSearchCriteria withAction(AuditEvent.AuditAction action) {
+<span class="nc" id="L338">            return setAction(action);</span>
+        }
+        
+        public AuditSearchCriteria withSeverity(AuditEvent.AuditSeverity severity) {
+<span class="nc" id="L342">            return setSeverity(severity);</span>
+        }
+        
+        public AuditSearchCriteria successfulOnly() {
+<span class="nc" id="L346">            return setSuccess(true);</span>
+        }
+        
+        public AuditSearchCriteria failedOnly() {
+<span class="nc" id="L350">            return setSuccess(false);</span>
+        }
+        
+        public AuditSearchCriteria pagination(int page, int size) {
+<span class="nc" id="L354">            return setPage(page).setSize(size);</span>
+        }
+        
+        public AuditSearchCriteria sortBy(String field, String direction) {
+<span class="nc" id="L358">            return setSortBy(field).setSortDirection(direction);</span>
+        }
+    }
+    
+    /**
+     * Result of an audit search operation.
+     */
+    interface AuditSearchResult {
+        java.util.List&lt;AuditEvent&gt; getEvents();
+        long getTotalElements();
+        int getTotalPages();
+        int getCurrentPage();
+        int getPageSize();
+        boolean hasNext();
+        boolean hasPrevious();
+    }
+    
+    /**
+     * Audit statistics for reporting.
+     */
+    interface AuditStatistics {
+        long getTotalEvents();
+        long getSuccessfulEvents();
+        long getFailedEvents();
+        Map&lt;String, Long&gt; getEventsByAction();
+        Map&lt;String, Long&gt; getEventsBySeverity();
+        Map&lt;String, Long&gt; getEventsByService();
+        Map&lt;String, Long&gt; getEventsByUser();
+        Map&lt;String, Long&gt; getEventsByHour();
+        Map&lt;String, Long&gt; getEventsByDay();
+        double getSuccessRate();
+        double getAverageResponseTime();
+    }
+    
+    /**
+     * Result of an audit export operation.
+     */
+    interface AuditExportResult {
+        String getExportId();
+        String getFormat();
+        String getFileName();
+        long getFileSize();
+        String getDownloadUrl();
+        LocalDateTime getCreatedAt();
+        LocalDateTime getExpiresAt();
+        int getRecordCount();
+        boolean isReady();
+        String getStatus();
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

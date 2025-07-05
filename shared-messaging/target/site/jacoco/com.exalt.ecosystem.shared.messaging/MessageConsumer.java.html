@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MessageConsumer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Exalt Shared Messaging Library</a> &gt; <a href="index.source.html" class="el_package">com.exalt.ecosystem.shared.messaging</a> &gt; <span class="el_source">MessageConsumer.java</span></div><h1>MessageConsumer.java</h1><pre class="source lang-java linenums">package com.exalt.ecosystem.shared.messaging;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+
+/**
+ * Interface for consuming messages in the Exalt Social E-commerce Ecosystem.
+ * Provides a unified API for receiving messages from different messaging systems.
+ * 
+ * @author Exalt Development Team
+ * @since 1.0.0
+ */
+public interface MessageConsumer {
+    
+    /**
+     * Starts consuming messages from a destination.
+     * 
+     * @param destination Source destination (topic, queue, exchange)
+     * @param messageHandler Handler for received messages
+     * @param messageType Expected message type
+     * @param &lt;T&gt; Message type
+     * @return Subscription handle for managing the consumer
+     */
+    &lt;T&gt; Subscription subscribe(String destination, Consumer&lt;T&gt; messageHandler, Class&lt;T&gt; messageType);
+    
+    /**
+     * Starts consuming messages with full options.
+     * 
+     * @param options Consumption options
+     * @param messageHandler Handler for received messages
+     * @param messageType Expected message type
+     * @param &lt;T&gt; Message type
+     * @return Subscription handle for managing the consumer
+     */
+    &lt;T&gt; Subscription subscribe(ConsumerOptions options, Consumer&lt;T&gt; messageHandler, Class&lt;T&gt; messageType);
+    
+    /**
+     * Starts consuming messages with full context.
+     * 
+     * @param destination Source destination
+     * @param messageHandler Handler with message context
+     * @param messageType Expected message type
+     * @param &lt;T&gt; Message type
+     * @return Subscription handle for managing the consumer
+     */
+    &lt;T&gt; Subscription subscribeWithContext(String destination, MessageHandler&lt;T&gt; messageHandler, Class&lt;T&gt; messageType);
+    
+    /**
+     * Polls for messages synchronously (for pull-based messaging).
+     * 
+     * @param destination Source destination
+     * @param messageType Expected message type
+     * @param timeoutMs Timeout in milliseconds
+     * @param &lt;T&gt; Message type
+     * @return Received message or null if timeout
+     */
+    &lt;T&gt; ReceivedMessage&lt;T&gt; poll(String destination, Class&lt;T&gt; messageType, long timeoutMs);
+    
+    /**
+     * Polls for multiple messages synchronously.
+     * 
+     * @param destination Source destination
+     * @param messageType Expected message type
+     * @param maxMessages Maximum number of messages to receive
+     * @param timeoutMs Timeout in milliseconds
+     * @param &lt;T&gt; Message type
+     * @return List of received messages
+     */
+    &lt;T&gt; java.util.List&lt;ReceivedMessage&lt;T&gt;&gt; pollBatch(String destination, Class&lt;T&gt; messageType, int maxMessages, long timeoutMs);
+    
+    /**
+     * Receives a single message and processes it (for request-reply scenarios).
+     * 
+     * @param destination Source destination
+     * @param processor Message processor
+     * @param requestType Expected request type
+     * @param responseType Response type
+     * @param &lt;Req&gt; Request type
+     * @param &lt;Res&gt; Response type
+     * @return Future for the processing operation
+     */
+    &lt;Req, Res&gt; CompletableFuture&lt;Void&gt; receiveAndReply(String destination, 
+                                                        RequestProcessor&lt;Req, Res&gt; processor,
+                                                        Class&lt;Req&gt; requestType, 
+                                                        Class&lt;Res&gt; responseType);
+    
+    /**
+     * Creates a temporary queue for receiving responses.
+     * 
+     * @return Temporary queue name
+     */
+    String createTemporaryQueue();
+    
+    /**
+     * Consumer options for message consumption.
+     */
+<span class="nc" id="L103">    class ConsumerOptions {</span>
+        private String destination;
+        private String consumerGroup;
+        private String clientId;
+<span class="nc" id="L107">        private boolean autoAcknowledge = false;</span>
+<span class="nc" id="L108">        private int prefetchCount = 10;</span>
+<span class="nc" id="L109">        private long sessionTimeoutMs = 30000;</span>
+<span class="nc" id="L110">        private long heartbeatIntervalMs = 3000;</span>
+<span class="nc" id="L111">        private boolean autoReconnect = true;</span>
+<span class="nc" id="L112">        private int maxRetries = 3;</span>
+<span class="nc" id="L113">        private long retryDelayMs = 1000;</span>
+        private String deadLetterQueue;
+<span class="nc" id="L115">        private OffsetResetStrategy offsetResetStrategy = OffsetResetStrategy.LATEST;</span>
+<span class="nc" id="L116">        private boolean concurrent = true;</span>
+<span class="nc" id="L117">        private int maxConcurrency = 10;</span>
+        private String filterExpression;
+        private Map&lt;String, Object&gt; consumerProperties;
+        
+<span class="nc" id="L121">        public enum OffsetResetStrategy {</span>
+<span class="nc" id="L122">            EARLIEST, LATEST, NONE</span>
+        }
+        
+        // Builder pattern
+        public static ConsumerOptions forDestination(String destination) {
+<span class="nc" id="L127">            return new ConsumerOptions().setDestination(destination);</span>
+        }
+        
+        // Getters and setters with fluent interface
+<span class="nc" id="L131">        public String getDestination() { return destination; }</span>
+        public ConsumerOptions setDestination(String destination) { 
+<span class="nc" id="L133">            this.destination = destination; return this; </span>
+        }
+        
+<span class="nc" id="L136">        public String getConsumerGroup() { return consumerGroup; }</span>
+        public ConsumerOptions setConsumerGroup(String consumerGroup) { 
+<span class="nc" id="L138">            this.consumerGroup = consumerGroup; return this; </span>
+        }
+        
+<span class="nc" id="L141">        public String getClientId() { return clientId; }</span>
+        public ConsumerOptions setClientId(String clientId) { 
+<span class="nc" id="L143">            this.clientId = clientId; return this; </span>
+        }
+        
+<span class="nc" id="L146">        public boolean isAutoAcknowledge() { return autoAcknowledge; }</span>
+        public ConsumerOptions setAutoAcknowledge(boolean autoAcknowledge) { 
+<span class="nc" id="L148">            this.autoAcknowledge = autoAcknowledge; return this; </span>
+        }
+        
+<span class="nc" id="L151">        public int getPrefetchCount() { return prefetchCount; }</span>
+        public ConsumerOptions setPrefetchCount(int prefetchCount) { 
+<span class="nc" id="L153">            this.prefetchCount = prefetchCount; return this; </span>
+        }
+        
+<span class="nc" id="L156">        public long getSessionTimeoutMs() { return sessionTimeoutMs; }</span>
+        public ConsumerOptions setSessionTimeoutMs(long sessionTimeoutMs) { 
+<span class="nc" id="L158">            this.sessionTimeoutMs = sessionTimeoutMs; return this; </span>
+        }
+        
+<span class="nc" id="L161">        public long getHeartbeatIntervalMs() { return heartbeatIntervalMs; }</span>
+        public ConsumerOptions setHeartbeatIntervalMs(long heartbeatIntervalMs) { 
+<span class="nc" id="L163">            this.heartbeatIntervalMs = heartbeatIntervalMs; return this; </span>
+        }
+        
+<span class="nc" id="L166">        public boolean isAutoReconnect() { return autoReconnect; }</span>
+        public ConsumerOptions setAutoReconnect(boolean autoReconnect) { 
+<span class="nc" id="L168">            this.autoReconnect = autoReconnect; return this; </span>
+        }
+        
+<span class="nc" id="L171">        public int getMaxRetries() { return maxRetries; }</span>
+        public ConsumerOptions setMaxRetries(int maxRetries) { 
+<span class="nc" id="L173">            this.maxRetries = maxRetries; return this; </span>
+        }
+        
+<span class="nc" id="L176">        public long getRetryDelayMs() { return retryDelayMs; }</span>
+        public ConsumerOptions setRetryDelayMs(long retryDelayMs) { 
+<span class="nc" id="L178">            this.retryDelayMs = retryDelayMs; return this; </span>
+        }
+        
+<span class="nc" id="L181">        public String getDeadLetterQueue() { return deadLetterQueue; }</span>
+        public ConsumerOptions setDeadLetterQueue(String deadLetterQueue) { 
+<span class="nc" id="L183">            this.deadLetterQueue = deadLetterQueue; return this; </span>
+        }
+        
+<span class="nc" id="L186">        public OffsetResetStrategy getOffsetResetStrategy() { return offsetResetStrategy; }</span>
+        public ConsumerOptions setOffsetResetStrategy(OffsetResetStrategy offsetResetStrategy) { 
+<span class="nc" id="L188">            this.offsetResetStrategy = offsetResetStrategy; return this; </span>
+        }
+        
+<span class="nc" id="L191">        public boolean isConcurrent() { return concurrent; }</span>
+        public ConsumerOptions setConcurrent(boolean concurrent) { 
+<span class="nc" id="L193">            this.concurrent = concurrent; return this; </span>
+        }
+        
+<span class="nc" id="L196">        public int getMaxConcurrency() { return maxConcurrency; }</span>
+        public ConsumerOptions setMaxConcurrency(int maxConcurrency) { 
+<span class="nc" id="L198">            this.maxConcurrency = maxConcurrency; return this; </span>
+        }
+        
+<span class="nc" id="L201">        public String getFilterExpression() { return filterExpression; }</span>
+        public ConsumerOptions setFilterExpression(String filterExpression) { 
+<span class="nc" id="L203">            this.filterExpression = filterExpression; return this; </span>
+        }
+        
+<span class="nc" id="L206">        public Map&lt;String, Object&gt; getConsumerProperties() { return consumerProperties; }</span>
+        public ConsumerOptions setConsumerProperties(Map&lt;String, Object&gt; consumerProperties) { 
+<span class="nc" id="L208">            this.consumerProperties = consumerProperties; return this; </span>
+        }
+        
+        // Convenience methods
+<span class="nc" id="L212">        public ConsumerOptions withGroup(String consumerGroup) { return setConsumerGroup(consumerGroup); }</span>
+<span class="nc" id="L213">        public ConsumerOptions withClient(String clientId) { return setClientId(clientId); }</span>
+<span class="nc" id="L214">        public ConsumerOptions withAutoAck() { return setAutoAcknowledge(true); }</span>
+<span class="nc" id="L215">        public ConsumerOptions withManualAck() { return setAutoAcknowledge(false); }</span>
+<span class="nc" id="L216">        public ConsumerOptions withPrefetch(int prefetchCount) { return setPrefetchCount(prefetchCount); }</span>
+<span class="nc" id="L217">        public ConsumerOptions withDeadLetter(String deadLetterQueue) { return setDeadLetterQueue(deadLetterQueue); }</span>
+<span class="nc" id="L218">        public ConsumerOptions fromEarliest() { return setOffsetResetStrategy(OffsetResetStrategy.EARLIEST); }</span>
+<span class="nc" id="L219">        public ConsumerOptions fromLatest() { return setOffsetResetStrategy(OffsetResetStrategy.LATEST); }</span>
+<span class="nc" id="L220">        public ConsumerOptions sequential() { return setConcurrent(false); }</span>
+<span class="nc" id="L221">        public ConsumerOptions concurrent(int maxConcurrency) { return setConcurrent(true).setMaxConcurrency(maxConcurrency); }</span>
+<span class="nc" id="L222">        public ConsumerOptions withFilter(String filterExpression) { return setFilterExpression(filterExpression); }</span>
+    }
+    
+    /**
+     * Message handler with full context.
+     */
+    @FunctionalInterface
+    interface MessageHandler&lt;T&gt; {
+        void handle(T message, MessageContext context);
+    }
+    
+    /**
+     * Request processor for request-reply pattern.
+     */
+    @FunctionalInterface
+    interface RequestProcessor&lt;Req, Res&gt; {
+        Res process(Req request, MessageContext context);
+    }
+    
+    /**
+     * Context for message processing.
+     */
+    interface MessageContext {
+        String getMessageId();
+        String getDestination();
+        Map&lt;String, Object&gt; getHeaders();
+        Object getHeader(String key);
+        Integer getPartition();
+        Long getOffset();
+        LocalDateTime getReceivedAt();
+        String getConsumerGroup();
+        int getRetryAttempt();
+        
+        void acknowledge();
+        void reject();
+        void reject(boolean requeue);
+        void reply(Object response);
+        void replyAndCorrelate(Object response, String correlationId);
+        
+        void addProcessingMetadata(String key, Object value);
+        Object getProcessingMetadata(String key);
+        
+        AutoCloseable createSpan(String operationName);
+        void log(String level, String message, Object... args);
+    }
+    
+    /**
+     * Received message wrapper.
+     */
+    interface ReceivedMessage&lt;T&gt; {
+        T getPayload();
+        MessageContext getContext();
+        String getMessageId();
+        Map&lt;String, Object&gt; getHeaders();
+        LocalDateTime getReceivedAt();
+        
+        void acknowledge();
+        void reject();
+        void reject(boolean requeue);
+    }
+    
+    /**
+     * Subscription handle for managing message consumption.
+     */
+    interface Subscription {
+        String getId();
+        String getDestination();
+        boolean isActive();
+        LocalDateTime getStartedAt();
+        long getMessagesProcessed();
+        long getMessagesErrored();
+        
+        void pause();
+        void resume();
+        void stop();
+        
+        CompletableFuture&lt;Void&gt; stopAsync();
+        
+        void addStatisticsListener(StatisticsListener listener);
+        void removeStatisticsListener(StatisticsListener listener);
+    }
+    
+    /**
+     * Statistics listener for monitoring consumption.
+     */
+    interface StatisticsListener {
+        void onMessageProcessed(String subscriptionId, long totalProcessed);
+        void onMessageErrored(String subscriptionId, Throwable error);
+        void onSubscriptionPaused(String subscriptionId);
+        void onSubscriptionResumed(String subscriptionId);
+        void onSubscriptionStopped(String subscriptionId);
+    }
+    
+    /**
+     * Annotation for marking message listener methods.
+     */
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.RUNTIME)
+    @interface Listener {
+        
+        /**
+         * Destination to listen to.
+         */
+        String destination();
+        
+        /**
+         * Consumer group (for load balancing).
+         */
+        String consumerGroup() default &quot;&quot;;
+        
+        /**
+         * Whether to auto-acknowledge messages.
+         */
+        boolean autoAcknowledge() default false;
+        
+        /**
+         * Prefetch count for performance optimization.
+         */
+        int prefetchCount() default 10;
+        
+        /**
+         * Maximum retry attempts for failed processing.
+         */
+        int maxRetries() default 3;
+        
+        /**
+         * Retry delay in milliseconds.
+         */
+        long retryDelay() default 1000;
+        
+        /**
+         * Dead letter queue for failed messages.
+         */
+        String deadLetterQueue() default &quot;&quot;;
+        
+        /**
+         * Whether to process messages concurrently.
+         */
+        boolean concurrent() default true;
+        
+        /**
+         * Maximum concurrent consumers.
+         */
+        int maxConcurrency() default 10;
+        
+        /**
+         * Filter expression for selective message processing.
+         */
+        String filter() default &quot;&quot;;
+        
+        /**
+         * Offset reset strategy for Kafka.
+         */
+        String offsetResetStrategy() default &quot;latest&quot;;
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

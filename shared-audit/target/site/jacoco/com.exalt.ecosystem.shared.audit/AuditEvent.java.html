@@ -1,0 +1,431 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuditEvent.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Exalt Shared Audit Library</a> &gt; <a href="index.source.html" class="el_package">com.exalt.ecosystem.shared.audit</a> &gt; <span class="el_source">AuditEvent.java</span></div><h1>AuditEvent.java</h1><pre class="source lang-java linenums">package com.exalt.ecosystem.shared.audit;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
+import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.UUID;
+
+/**
+ * Audit event entity representing a trackable action in the Exalt Social E-commerce Ecosystem.
+ * Stores comprehensive audit information for compliance, security, and operational monitoring.
+ * 
+ * @author Exalt Development Team
+ * @since 1.0.0
+ */
+@Entity
+@Table(name = &quot;audit_events&quot;, 
+       indexes = {
+           @Index(name = &quot;idx_audit_timestamp&quot;, columnList = &quot;timestamp&quot;),
+           @Index(name = &quot;idx_audit_user_id&quot;, columnList = &quot;userId&quot;),
+           @Index(name = &quot;idx_audit_resource&quot;, columnList = &quot;resourceType, resourceId&quot;),
+           @Index(name = &quot;idx_audit_action&quot;, columnList = &quot;action&quot;),
+           @Index(name = &quot;idx_audit_service&quot;, columnList = &quot;serviceName&quot;),
+           @Index(name = &quot;idx_audit_correlation&quot;, columnList = &quot;correlationId&quot;),
+           @Index(name = &quot;idx_audit_session&quot;, columnList = &quot;sessionId&quot;),
+           @Index(name = &quot;idx_audit_severity&quot;, columnList = &quot;severity&quot;)
+       })
+<span class="nc bnc" id="L40" title="All 254 branches missed.">@Data</span>
+<span class="nc bnc" id="L41" title="All 6 branches missed.">@Builder</span>
+<span class="nc" id="L42">@NoArgsConstructor</span>
+<span class="nc" id="L43">@AllArgsConstructor</span>
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class AuditEvent {
+    
+    /**
+     * Unique identifier for the audit event.
+     */
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = &quot;id&quot;, updatable = false, nullable = false)
+<span class="nc" id="L53">    private UUID id;</span>
+    
+    /**
+     * Timestamp when the audited action occurred.
+     */
+    @CreationTimestamp
+    @Column(name = &quot;timestamp&quot;, nullable = false)
+    @JsonFormat(pattern = &quot;yyyy-MM-dd HH:mm:ss&quot;)
+<span class="nc" id="L61">    private LocalDateTime timestamp;</span>
+    
+    /**
+     * Type of action being audited (CREATE, READ, UPDATE, DELETE, LOGIN, etc.).
+     */
+    @NotBlank
+    @Size(max = 50)
+    @Column(name = &quot;action&quot;, nullable = false, length = 50)
+    @Enumerated(EnumType.STRING)
+<span class="nc" id="L70">    private AuditAction action;</span>
+    
+    /**
+     * Name of the service that generated this audit event.
+     */
+    @NotBlank
+    @Size(max = 100)
+    @Column(name = &quot;service_name&quot;, nullable = false, length = 100)
+<span class="nc" id="L78">    private String serviceName;</span>
+    
+    /**
+     * Type of resource being audited (User, Product, Order, etc.).
+     */
+    @Size(max = 100)
+    @Column(name = &quot;resource_type&quot;, length = 100)
+<span class="nc" id="L85">    private String resourceType;</span>
+    
+    /**
+     * Unique identifier of the resource being audited.
+     */
+    @Size(max = 255)
+    @Column(name = &quot;resource_id&quot;, length = 255)
+<span class="nc" id="L92">    private String resourceId;</span>
+    
+    /**
+     * ID of the user who performed the action.
+     */
+    @Size(max = 255)
+    @Column(name = &quot;user_id&quot;, length = 255)
+<span class="nc" id="L99">    private String userId;</span>
+    
+    /**
+     * Username of the user who performed the action.
+     */
+    @Size(max = 255)
+    @Column(name = &quot;username&quot;, length = 255)
+<span class="nc" id="L106">    private String username;</span>
+    
+    /**
+     * Session ID for tracking user sessions.
+     */
+    @Size(max = 255)
+    @Column(name = &quot;session_id&quot;, length = 255)
+<span class="nc" id="L113">    private String sessionId;</span>
+    
+    /**
+     * IP address from which the action was performed.
+     */
+    @Size(max = 45)
+    @Column(name = &quot;ip_address&quot;, length = 45)
+<span class="nc" id="L120">    private String ipAddress;</span>
+    
+    /**
+     * User agent string from the client.
+     */
+    @Size(max = 500)
+    @Column(name = &quot;user_agent&quot;, length = 500)
+<span class="nc" id="L127">    private String userAgent;</span>
+    
+    /**
+     * HTTP method for web requests (GET, POST, PUT, DELETE, etc.).
+     */
+    @Size(max = 10)
+    @Column(name = &quot;http_method&quot;, length = 10)
+<span class="nc" id="L134">    private String httpMethod;</span>
+    
+    /**
+     * Request URI for web requests.
+     */
+    @Size(max = 1000)
+    @Column(name = &quot;request_uri&quot;, length = 1000)
+<span class="nc" id="L141">    private String requestUri;</span>
+    
+    /**
+     * HTTP status code for web responses.
+     */
+    @Column(name = &quot;http_status&quot;)
+<span class="nc" id="L147">    private Integer httpStatus;</span>
+    
+    /**
+     * Duration of the operation in milliseconds.
+     */
+    @Column(name = &quot;duration_ms&quot;)
+<span class="nc" id="L153">    private Long durationMs;</span>
+    
+    /**
+     * Correlation ID for tracking related operations across services.
+     */
+    @Size(max = 255)
+    @Column(name = &quot;correlation_id&quot;, length = 255)
+<span class="nc" id="L160">    private String correlationId;</span>
+    
+    /**
+     * Trace ID for distributed tracing.
+     */
+    @Size(max = 255)
+    @Column(name = &quot;trace_id&quot;, length = 255)
+<span class="nc" id="L167">    private String traceId;</span>
+    
+    /**
+     * Tenant ID for multi-tenancy support.
+     */
+    @Size(max = 255)
+    @Column(name = &quot;tenant_id&quot;, length = 255)
+<span class="nc" id="L174">    private String tenantId;</span>
+    
+    /**
+     * Severity level of the audit event.
+     */
+    @NotNull
+    @Column(name = &quot;severity&quot;, nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+<span class="nc" id="L183">    private AuditSeverity severity = AuditSeverity.INFO;</span>
+    
+    /**
+     * Category of the audit event for classification.
+     */
+    @Size(max = 100)
+    @Column(name = &quot;category&quot;, length = 100)
+<span class="nc" id="L190">    private String category;</span>
+    
+    /**
+     * Description of the audited action.
+     */
+    @Size(max = 1000)
+    @Column(name = &quot;description&quot;, length = 1000)
+<span class="nc" id="L197">    private String description;</span>
+    
+    /**
+     * Success/failure status of the operation.
+     */
+    @NotNull
+    @Column(name = &quot;success&quot;, nullable = false)
+    @Builder.Default
+<span class="nc" id="L205">    private Boolean success = true;</span>
+    
+    /**
+     * Error message if the operation failed.
+     */
+    @Size(max = 2000)
+    @Column(name = &quot;error_message&quot;, length = 2000)
+<span class="nc" id="L212">    private String errorMessage;</span>
+    
+    /**
+     * Exception type if the operation failed.
+     */
+    @Size(max = 255)
+    @Column(name = &quot;exception_type&quot;, length = 255)
+<span class="nc" id="L219">    private String exceptionType;</span>
+    
+    /**
+     * Previous values before the change (for UPDATE operations).
+     */
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = &quot;old_values&quot;, columnDefinition = &quot;jsonb&quot;)
+<span class="nc" id="L226">    private Map&lt;String, Object&gt; oldValues;</span>
+    
+    /**
+     * New values after the change (for CREATE/UPDATE operations).
+     */
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = &quot;new_values&quot;, columnDefinition = &quot;jsonb&quot;)
+<span class="nc" id="L233">    private Map&lt;String, Object&gt; newValues;</span>
+    
+    /**
+     * Additional metadata for the audit event.
+     */
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = &quot;metadata&quot;, columnDefinition = &quot;jsonb&quot;)
+<span class="nc" id="L240">    private Map&lt;String, Object&gt; metadata;</span>
+    
+    /**
+     * Tags for categorizing and filtering audit events.
+     */
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = &quot;tags&quot;, columnDefinition = &quot;jsonb&quot;)
+<span class="nc" id="L247">    private Map&lt;String, String&gt; tags;</span>
+    
+    /**
+     * Security context information.
+     */
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = &quot;security_context&quot;, columnDefinition = &quot;jsonb&quot;)
+<span class="nc" id="L254">    private Map&lt;String, Object&gt; securityContext;</span>
+    
+    /**
+     * Compliance flags for regulatory requirements.
+     */
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = &quot;compliance_flags&quot;, columnDefinition = &quot;jsonb&quot;)
+<span class="nc" id="L261">    private Map&lt;String, Boolean&gt; complianceFlags;</span>
+    
+    /**
+     * Retention period for the audit event in days.
+     */
+    @Column(name = &quot;retention_days&quot;)
+    @Builder.Default
+<span class="nc" id="L268">    private Integer retentionDays = 2555; // 7 years default</span>
+    
+    /**
+     * Audit action enumeration.
+     */
+<span class="nc" id="L273">    public enum AuditAction {</span>
+<span class="nc" id="L274">        CREATE, READ, UPDATE, DELETE, LOGIN, LOGOUT, ACCESS, EXPORT, IMPORT, </span>
+<span class="nc" id="L275">        APPROVE, REJECT, CANCEL, SUSPEND, ACTIVATE, DEACTIVATE, RESET,</span>
+<span class="nc" id="L276">        GRANT, REVOKE, AUTHENTICATE, AUTHORIZE, VALIDATE, PROCESS, EXECUTE,</span>
+<span class="nc" id="L277">        SYNC, BACKUP, RESTORE, MIGRATE, CONFIGURE, DEPLOY, SCALE</span>
+    }
+    
+    /**
+     * Audit severity enumeration.
+     */
+<span class="nc" id="L283">    public enum AuditSeverity {</span>
+<span class="nc" id="L284">        TRACE, DEBUG, INFO, WARN, ERROR, CRITICAL</span>
+    }
+    
+    /**
+     * Adds a tag to the audit event.
+     * 
+     * @param key Tag key
+     * @param value Tag value
+     */
+    public void addTag(String key, String value) {
+<span class="nc bnc" id="L294" title="All 2 branches missed.">        if (this.tags == null) {</span>
+<span class="nc" id="L295">            this.tags = new java.util.HashMap&lt;&gt;();</span>
+        }
+<span class="nc" id="L297">        this.tags.put(key, value);</span>
+<span class="nc" id="L298">    }</span>
+    
+    /**
+     * Adds metadata to the audit event.
+     * 
+     * @param key Metadata key
+     * @param value Metadata value
+     */
+    public void addMetadata(String key, Object value) {
+<span class="nc bnc" id="L307" title="All 2 branches missed.">        if (this.metadata == null) {</span>
+<span class="nc" id="L308">            this.metadata = new java.util.HashMap&lt;&gt;();</span>
+        }
+<span class="nc" id="L310">        this.metadata.put(key, value);</span>
+<span class="nc" id="L311">    }</span>
+    
+    /**
+     * Adds security context information.
+     * 
+     * @param key Security context key
+     * @param value Security context value
+     */
+    public void addSecurityContext(String key, Object value) {
+<span class="nc bnc" id="L320" title="All 2 branches missed.">        if (this.securityContext == null) {</span>
+<span class="nc" id="L321">            this.securityContext = new java.util.HashMap&lt;&gt;();</span>
+        }
+<span class="nc" id="L323">        this.securityContext.put(key, value);</span>
+<span class="nc" id="L324">    }</span>
+    
+    /**
+     * Sets a compliance flag.
+     * 
+     * @param complianceType Type of compliance (GDPR, PCI_DSS, HIPAA, etc.)
+     * @param isCompliant Whether the action is compliant
+     */
+    public void setComplianceFlag(String complianceType, boolean isCompliant) {
+<span class="nc bnc" id="L333" title="All 2 branches missed.">        if (this.complianceFlags == null) {</span>
+<span class="nc" id="L334">            this.complianceFlags = new java.util.HashMap&lt;&gt;();</span>
+        }
+<span class="nc" id="L336">        this.complianceFlags.put(complianceType, isCompliant);</span>
+<span class="nc" id="L337">    }</span>
+    
+    /**
+     * Checks if this is a security-sensitive audit event.
+     * 
+     * @return true if security-sensitive
+     */
+    public boolean isSecuritySensitive() {
+<span class="nc bnc" id="L345" title="All 16 branches missed.">        return action == AuditAction.LOGIN || </span>
+               action == AuditAction.LOGOUT || 
+               action == AuditAction.AUTHENTICATE ||
+               action == AuditAction.AUTHORIZE ||
+               action == AuditAction.GRANT ||
+               action == AuditAction.REVOKE ||
+               severity == AuditSeverity.CRITICAL ||
+               severity == AuditSeverity.ERROR;
+    }
+    
+    /**
+     * Checks if this audit event requires long-term retention.
+     * 
+     * @return true if long-term retention is required
+     */
+    public boolean requiresLongTermRetention() {
+<span class="nc bnc" id="L361" title="All 2 branches missed.">        return complianceFlags != null &amp;&amp; (</span>
+<span class="nc bnc" id="L362" title="All 2 branches missed.">            Boolean.TRUE.equals(complianceFlags.get(&quot;GDPR&quot;)) ||</span>
+<span class="nc bnc" id="L363" title="All 2 branches missed.">            Boolean.TRUE.equals(complianceFlags.get(&quot;PCI_DSS&quot;)) ||</span>
+<span class="nc bnc" id="L364" title="All 2 branches missed.">            Boolean.TRUE.equals(complianceFlags.get(&quot;SOX&quot;)) ||</span>
+<span class="nc bnc" id="L365" title="All 2 branches missed.">            Boolean.TRUE.equals(complianceFlags.get(&quot;HIPAA&quot;))</span>
+        );
+    }
+    
+    /**
+     * Gets a summary description of the audit event.
+     * 
+     * @return Summary description
+     */
+    public String getSummary() {
+<span class="nc" id="L375">        return String.format(&quot;%s %s on %s%s by %s at %s&quot;, </span>
+            action, 
+<span class="nc bnc" id="L377" title="All 2 branches missed.">            success ? &quot;succeeded&quot; : &quot;failed&quot;,</span>
+<span class="nc bnc" id="L378" title="All 2 branches missed.">            resourceType != null ? resourceType : &quot;system&quot;,</span>
+<span class="nc bnc" id="L379" title="All 2 branches missed.">            resourceId != null ? &quot; (ID: &quot; + resourceId + &quot;)&quot; : &quot;&quot;,</span>
+<span class="nc bnc" id="L380" title="All 2 branches missed.">            username != null ? username : &quot;system&quot;,</span>
+            timestamp
+        );
+    }
+    
+    /**
+     * Creates a builder for audit events with common fields pre-populated.
+     * 
+     * @param action Audit action
+     * @param serviceName Service name
+     * @return Builder instance
+     */
+    public static AuditEventBuilder standard(AuditAction action, String serviceName) {
+<span class="nc" id="L393">        return AuditEvent.builder()</span>
+<span class="nc" id="L394">            .id(UUID.randomUUID())</span>
+<span class="nc" id="L395">            .action(action)</span>
+<span class="nc" id="L396">            .serviceName(serviceName)</span>
+<span class="nc" id="L397">            .timestamp(LocalDateTime.now())</span>
+<span class="nc" id="L398">            .severity(AuditSeverity.INFO)</span>
+<span class="nc" id="L399">            .success(true);</span>
+    }
+    
+    /**
+     * Creates a builder for security-related audit events.
+     * 
+     * @param action Security action
+     * @param serviceName Service name
+     * @return Builder instance
+     */
+    public static AuditEventBuilder security(AuditAction action, String serviceName) {
+<span class="nc" id="L410">        return standard(action, serviceName)</span>
+<span class="nc" id="L411">            .severity(AuditSeverity.WARN)</span>
+<span class="nc" id="L412">            .category(&quot;SECURITY&quot;);</span>
+    }
+    
+    /**
+     * Creates a builder for compliance-related audit events.
+     * 
+     * @param action Compliance action
+     * @param serviceName Service name
+     * @param complianceType Type of compliance
+     * @return Builder instance
+     */
+    public static AuditEventBuilder compliance(AuditAction action, String serviceName, String complianceType) {
+<span class="nc" id="L424">        AuditEventBuilder builder = standard(action, serviceName)</span>
+<span class="nc" id="L425">            .category(&quot;COMPLIANCE&quot;)</span>
+<span class="nc" id="L426">            .retentionDays(2555); // 7 years</span>
+            
+<span class="nc" id="L428">        return builder;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

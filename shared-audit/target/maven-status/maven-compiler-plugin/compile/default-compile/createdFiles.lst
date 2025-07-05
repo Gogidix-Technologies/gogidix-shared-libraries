@@ -1,0 +1,5 @@
+com/exalt/ecosystem/shared/audit/AuditEvent.class
+com/exalt/ecosystem/shared/audit/AuditLogger.class
+com/exalt/ecosystem/shared/audit/AuditEvent$Action.class
+com/exalt/ecosystem/shared/audit/AuditEvent$AuditEventBuilder.class
+com/exalt/ecosystem/shared/audit/AuditEvent$EventType.class
