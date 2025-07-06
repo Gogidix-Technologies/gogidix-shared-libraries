@@ -1,4 +1,10 @@
-/mnt/c/Users/frich/Desktop/Exalt-Application-Limited/Exalt-Application-Limited/social-ecommerce-ecosystem/shared-libraries/shared-validation/src/main/java/com/exalt/ecosystem/shared/validation/ValidEmail.java
-/mnt/c/Users/frich/Desktop/Exalt-Application-Limited/Exalt-Application-Limited/social-ecommerce-ecosystem/shared-libraries/shared-validation/src/main/java/com/exalt/ecosystem/shared/validation/EmailValidator.java
-/mnt/c/Users/frich/Desktop/Exalt-Application-Limited/Exalt-Application-Limited/social-ecommerce-ecosystem/shared-libraries/shared-validation/src/main/java/com/exalt/ecosystem/shared/validation/ValidPhoneNumber.java
-/mnt/c/Users/frich/Desktop/Exalt-Application-Limited/Exalt-Application-Limited/social-ecommerce-ecosystem/shared-libraries/shared-validation/src/main/java/com/exalt/ecosystem/shared/validation/PhoneNumberValidator.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-validation/src/main/java/com/gogidix/ecosystem/shared/validation/validators/PasswordValidator.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-validation/src/main/java/com/gogidix/ecosystem/shared/validation/validators/CurrencyValidator.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-validation/src/main/java/com/gogidix/ecosystem/shared/validation/validators/EmailValidator.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-validation/src/main/java/com/gogidix/ecosystem/shared/validation/constraints/ValidPhone.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-validation/src/main/java/com/gogidix/ecosystem/shared/validation/constraints/ValidEmail.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-validation/src/main/java/com/gogidix/ecosystem/shared/validation/ValidationResult.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-validation/src/main/java/com/gogidix/ecosystem/shared/validation/ValidationUtils.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-validation/src/main/java/com/gogidix/ecosystem/shared/validation/validators/PhoneValidator.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-validation/src/main/java/com/gogidix/ecosystem/shared/validation/constraints/ValidCurrency.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-validation/src/main/java/com/gogidix/ecosystem/shared/validation/constraints/ValidPassword.java

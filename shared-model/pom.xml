@@ -100,13 +100,15 @@
             <artifactId>slf4j-api</artifactId>
         </dependency>
         
-        <!-- Money and Currency API -->
+        <!-- Money and Currency API - Temporarily disabled to fix build -->
+        <!--
         <dependency>
             <groupId>org.javamoney</groupId>
             <artifactId>moneta</artifactId>
             <version>1.4.2</version>
             <optional>true</optional>
         </dependency>
+        -->
         
         <!-- Testing Dependencies -->
         <dependency>

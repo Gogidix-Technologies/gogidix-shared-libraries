@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: com.exalt.ecosystem.shared.model.user.UserRepositoryTest
--------------------------------------------------------------------------------
-Tests run: 16, Failures: 0, Errors: 0, Skipped: 16, Time elapsed: 0.001 s -- in com.exalt.ecosystem.shared.model.user.UserRepositoryTest

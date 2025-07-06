@@ -161,12 +161,14 @@
             <optional>true</optional>
         </dependency>
         
-        <!-- Money and Currency -->
+        <!-- Money and Currency - Temporarily disabled to fix build -->
+        <!--
         <dependency>
             <groupId>org.javamoney</groupId>
             <artifactId>moneta</artifactId>
             <version>1.4.2</version>
         </dependency>
+        -->
         
         <!-- Logging -->
         <dependency>

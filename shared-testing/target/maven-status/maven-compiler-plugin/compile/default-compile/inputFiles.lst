@@ -1,2 +1,6 @@
-/mnt/c/Users/frich/Desktop/Exalt-Application-Limited/Exalt-Application-Limited/social-ecommerce-ecosystem/shared-libraries/shared-testing/src/main/java/com/exalt/ecosystem/shared/testing/IntegrationTestBase.java
-/mnt/c/Users/frich/Desktop/Exalt-Application-Limited/Exalt-Application-Limited/social-ecommerce-ecosystem/shared-libraries/shared-testing/src/main/java/com/exalt/ecosystem/shared/testing/TestDataFactory.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-testing/src/main/java/com/gogidix/ecosystem/shared/testing/TestDataFactory.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-testing/src/main/java/com/gogidix/ecosystem/shared/testing/BaseIntegrationTest.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-testing/src/main/java/com/gogidix/ecosystem/shared/testing/MockUtils.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-testing/src/main/java/com/gogidix/ecosystem/shared/testing/PerformanceTestUtils.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-testing/src/main/java/com/gogidix/ecosystem/shared/testing/TestContainerConfig.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-testing/src/main/java/com/gogidix/ecosystem/shared/testing/ApiTestClient.java

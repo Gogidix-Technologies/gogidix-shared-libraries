@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: com.exalt.ecosystem.shared.audit.AuditServiceComprehensiveTest$SimpleAuditMethodsTests
--------------------------------------------------------------------------------
-Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.072 s -- in com.exalt.ecosystem.shared.audit.AuditServiceComprehensiveTest$SimpleAuditMethodsTests

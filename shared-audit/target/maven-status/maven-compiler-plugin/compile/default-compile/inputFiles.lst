@@ -1,2 +1,6 @@
-/mnt/c/Users/frich/Desktop/Exalt-Application-Limited/Exalt-Application-Limited/social-ecommerce-ecosystem/shared-libraries/shared-audit/src/main/java/com/exalt/ecosystem/shared/audit/AuditEvent.java
-/mnt/c/Users/frich/Desktop/Exalt-Application-Limited/Exalt-Application-Limited/social-ecommerce-ecosystem/shared-libraries/shared-audit/src/main/java/com/exalt/ecosystem/shared/audit/AuditLogger.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-audit/src/main/java/com/gogidix/ecosystem/shared/audit/ComplianceReporter.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-audit/src/main/java/com/gogidix/ecosystem/shared/audit/AuditRepository.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-audit/src/main/java/com/gogidix/ecosystem/shared/audit/Auditable.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-audit/src/main/java/com/gogidix/ecosystem/shared/audit/AuditService.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-audit/src/main/java/com/gogidix/ecosystem/shared/audit/AuditLogger.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-audit/src/main/java/com/gogidix/ecosystem/shared/audit/AuditEvent.java

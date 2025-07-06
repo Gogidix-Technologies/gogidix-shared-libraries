@@ -1,2 +1,8 @@
-/mnt/c/Users/frich/Desktop/Exalt-Application-Limited/Exalt-Application-Limited/social-ecommerce-ecosystem/shared-libraries/shared-security/src/main/java/com/exalt/ecosystem/shared/security/SecurityUtils.java
-/mnt/c/Users/frich/Desktop/Exalt-Application-Limited/Exalt-Application-Limited/social-ecommerce-ecosystem/shared-libraries/shared-security/src/main/java/com/exalt/ecosystem/shared/security/JwtTokenProvider.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-security/src/main/java/com/gogidix/ecosystem/shared/security/AuthTokenFilter.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-security/src/main/java/com/gogidix/ecosystem/shared/security/SecurityUtils.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-security/src/main/java/com/gogidix/ecosystem/shared/security/AuthEntryPointJwt.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-security/src/main/java/com/gogidix/ecosystem/shared/security/SecurityConfig.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-security/src/main/java/com/gogidix/ecosystem/shared/security/UserDetailsImpl.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-security/src/main/java/com/gogidix/ecosystem/shared/security/RoleHierarchy.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-security/src/main/java/com/gogidix/ecosystem/shared/security/CustomPermissionEvaluator.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-security/src/main/java/com/gogidix/ecosystem/shared/security/JwtTokenProvider.java

@@ -1,2 +1,8 @@
-com/exalt/ecosystem/shared/security/JwtTokenProvider.class
-com/exalt/ecosystem/shared/security/SecurityUtils.class
+com/gogidix/ecosystem/shared/security/CustomPermissionEvaluator.class
+com/gogidix/ecosystem/shared/security/JwtTokenProvider.class
+com/gogidix/ecosystem/shared/security/AuthTokenFilter.class
+com/gogidix/ecosystem/shared/security/SecurityUtils.class
+com/gogidix/ecosystem/shared/security/UserDetailsImpl.class
+com/gogidix/ecosystem/shared/security/SecurityConfig.class
+com/gogidix/ecosystem/shared/security/AuthEntryPointJwt.class
+com/gogidix/ecosystem/shared/security/RoleHierarchy.class

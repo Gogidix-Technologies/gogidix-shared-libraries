@@ -1,7 +1,0 @@
-com/exalt/ecosystem/shared/security/JwtTokenProviderTest$TokenGenerationTests.class
-com/exalt/ecosystem/shared/security/SecurityUtilsTest$PasswordEncryptionTests.class
-com/exalt/ecosystem/shared/security/JwtTokenProviderTest$TokenValidationTests.class
-com/exalt/ecosystem/shared/security/SecurityUtilsTest.class
-com/exalt/ecosystem/shared/security/JwtTokenProviderTest.class
-com/exalt/ecosystem/shared/security/SecurityUtilsTest$HashGenerationTests.class
-com/exalt/ecosystem/shared/security/JwtTokenProviderTest$TokenParsingTests.class

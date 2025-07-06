@@ -1,6 +1,9 @@
-/mnt/c/Users/frich/Desktop/Exalt-Application-Limited/Exalt-Application-Limited/social-ecommerce-ecosystem/shared-libraries/shared-exceptions/src/main/java/com/exalt/ecosystem/shared/exceptions/ValidationException.java
-/mnt/c/Users/frich/Desktop/Exalt-Application-Limited/Exalt-Application-Limited/social-ecommerce-ecosystem/shared-libraries/shared-exceptions/src/main/java/com/exalt/ecosystem/shared/exceptions/ResourceNotFoundException.java
-/mnt/c/Users/frich/Desktop/Exalt-Application-Limited/Exalt-Application-Limited/social-ecommerce-ecosystem/shared-libraries/shared-exceptions/src/main/java/com/exalt/ecosystem/shared/exceptions/AuthenticationException.java
-/mnt/c/Users/frich/Desktop/Exalt-Application-Limited/Exalt-Application-Limited/social-ecommerce-ecosystem/shared-libraries/shared-exceptions/src/main/java/com/exalt/ecosystem/shared/exceptions/BusinessException.java
-/mnt/c/Users/frich/Desktop/Exalt-Application-Limited/Exalt-Application-Limited/social-ecommerce-ecosystem/shared-libraries/shared-exceptions/src/main/java/com/exalt/ecosystem/shared/exceptions/AuthorizationException.java
-/mnt/c/Users/frich/Desktop/Exalt-Application-Limited/Exalt-Application-Limited/social-ecommerce-ecosystem/shared-libraries/shared-exceptions/src/main/java/com/exalt/ecosystem/shared/exceptions/BaseException.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-exceptions/src/main/java/com/gogidix/ecosystem/shared/exceptions/BaseException.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-exceptions/src/main/java/com/gogidix/ecosystem/shared/exceptions/AuthorizationException.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-exceptions/src/main/java/com/gogidix/ecosystem/shared/exceptions/ServiceUnavailableException.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-exceptions/src/main/java/com/gogidix/ecosystem/shared/exceptions/ResourceNotFoundException.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-exceptions/src/main/java/com/gogidix/ecosystem/shared/exceptions/ValidationException.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-exceptions/src/main/java/com/gogidix/ecosystem/shared/exceptions/BusinessException.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-exceptions/src/main/java/com/gogidix/ecosystem/shared/exceptions/ErrorResponse.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-exceptions/src/main/java/com/gogidix/ecosystem/shared/exceptions/ExceptionHandler.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-exceptions/src/main/java/com/gogidix/ecosystem/shared/exceptions/AuthenticationException.java

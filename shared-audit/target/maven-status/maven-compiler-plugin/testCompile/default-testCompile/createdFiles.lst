@@ -1,7 +1,0 @@
-com/exalt/ecosystem/shared/audit/AuditLoggerTest$AsyncLoggingTests.class
-com/exalt/ecosystem/shared/audit/AuditLoggerTest$LogEventTests.class
-com/exalt/ecosystem/shared/audit/AuditLoggerTest.class
-com/exalt/ecosystem/shared/audit/AuditEventTest$SerializationTests.class
-com/exalt/ecosystem/shared/audit/AuditEventTest$ConstructorTests.class
-com/exalt/ecosystem/shared/audit/AuditEventTest.class
-com/exalt/ecosystem/shared/audit/AuditEventTest$ValidationTests.class

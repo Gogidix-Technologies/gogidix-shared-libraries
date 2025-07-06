@@ -1,2 +1,7 @@
-/mnt/c/Users/frich/Desktop/Exalt-Application-Limited/Exalt-Application-Limited/social-ecommerce-ecosystem/shared-libraries/shared-utilities/src/main/java/com/exalt/ecosystem/shared/utilities/DateUtils.java
-/mnt/c/Users/frich/Desktop/Exalt-Application-Limited/Exalt-Application-Limited/social-ecommerce-ecosystem/shared-libraries/shared-utilities/src/main/java/com/exalt/ecosystem/shared/utilities/StringUtils.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-utilities/src/main/java/com/gogidix/ecosystem/shared/utilities/EncryptionUtils.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-utilities/src/main/java/com/gogidix/ecosystem/shared/utilities/CurrencyUtils.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-utilities/src/main/java/com/gogidix/ecosystem/shared/utilities/DateUtils.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-utilities/src/main/java/com/gogidix/ecosystem/shared/utilities/StringUtils.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-utilities/src/main/java/com/gogidix/ecosystem/shared/utilities/CollectionUtils.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-utilities/src/main/java/com/gogidix/ecosystem/shared/utilities/FileUtils.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-utilities/src/main/java/com/gogidix/ecosystem/shared/utilities/JsonUtils.java

@@ -1,2 +1,7 @@
-/mnt/c/Users/frich/Desktop/Exalt-Application-Limited/Exalt-Application-Limited/social-ecommerce-ecosystem/shared-libraries/shared-messaging/src/main/java/com/exalt/ecosystem/shared/messaging/EventPublisher.java
-/mnt/c/Users/frich/Desktop/Exalt-Application-Limited/Exalt-Application-Limited/social-ecommerce-ecosystem/shared-libraries/shared-messaging/src/main/java/com/exalt/ecosystem/shared/messaging/DomainEvent.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-messaging/src/main/java/com/gogidix/ecosystem/shared/messaging/config/RabbitMQConfig.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-messaging/src/main/java/com/gogidix/ecosystem/shared/messaging/DomainEvent.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-messaging/src/main/java/com/gogidix/ecosystem/shared/messaging/EventHandler.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-messaging/src/main/java/com/gogidix/ecosystem/shared/messaging/EventPublisher.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-messaging/src/main/java/com/gogidix/ecosystem/shared/messaging/MessageConsumer.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-messaging/src/main/java/com/gogidix/ecosystem/shared/messaging/config/KafkaConfig.java
+/mnt/c/Users/frich/Desktop/Gogidix-Technologies/CLEAN-SOCIAL-ECOMMERCE-ECOSYSTEM/shared-libraries/shared-messaging/src/main/java/com/gogidix/ecosystem/shared/messaging/MessageProducer.java

@@ -287,8 +287,8 @@ class SecurityUtilsTest {
     @DisplayName("Should generate secure random password")
     void shouldGenerateSecureRandomPassword() {
         // When
-        String password1 = SecurityUtils.generateSecurePassword();
-        String password2 = SecurityUtils.generateSecurePassword();
+        String password1 = SecurityUtils.generateSecurePassword(12);
+        String password2 = SecurityUtils.generateSecurePassword(12);
 
         // Then
         assertThat(password1).isNotNull();

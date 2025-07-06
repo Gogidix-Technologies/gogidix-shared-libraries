@@ -84,7 +84,7 @@
         <dependency>
             <groupId>commons-validator</groupId>
             <artifactId>commons-validator</artifactId>
-            <version>1.7</version>
+            <version>1.6</version>
         </dependency>
         
         <!-- Phone Number Validation -->
@@ -94,12 +94,7 @@
             <version>8.13.23</version>
         </dependency>
         
-        <!-- Credit Card Validation -->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-validator</artifactId>
-            <version>1.7</version>
-        </dependency>
+        <!-- Credit Card Validation - Using same commons-validator as email validation above -->
         
         <!-- Passay for Password Validation -->
         <dependency>
