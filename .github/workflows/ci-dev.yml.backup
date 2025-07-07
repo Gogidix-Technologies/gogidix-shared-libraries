@@ -36,6 +36,12 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Setup Node.js
+        if: steps.tech-stack.outputs.stack == 'node'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
 
       - name: Build Java Service
         if: steps.tech-stack.outputs.stack == 'java'
@@ -94,28 +100,26 @@ jobs:
           else
             echo "No Kubernetes manifests found, creating basic deployment"
             mkdir -p k8s/dev
-            cat > k8s/dev/deployment.yaml <<EOF
-          apiVersion: apps/v1
-          kind: Deployment
-          metadata:
-            name: ${{ github.event.repository.name }}
-            namespace: ${{ env.NAMESPACE }}
-          spec:
-            replicas: 1
-            selector:
-              matchLabels:
-                app: ${{ github.event.repository.name }}
-            template:
-              metadata:
-                labels:
-                  app: ${{ github.event.repository.name }}
-              spec:
-                containers:
-                - name: ${{ github.event.repository.name }}
-                  image: ${{ github.event.repository.name }}:latest
-                  ports:
-                  - containerPort: 8080
-          EOF
+            echo "apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${{ github.event.repository.name }}
+  namespace: ${{ env.NAMESPACE }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ${{ github.event.repository.name }}
+  template:
+    metadata:
+      labels:
+        app: ${{ github.event.repository.name }}
+    spec:
+      containers:
+      - name: ${{ github.event.repository.name }}
+        image: ${{ github.event.repository.name }}:latest
+        ports:
+        - containerPort: 8080" > k8s/dev/deployment.yaml
           fi
 
       - name: Deploy to EKS Dev
